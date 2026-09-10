@@ -1,0 +1,5 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { url } from '../lib/graph';
+---
+<BaseLayout title="Object not found"><div class="page-width document-intro"><p class="eyebrow">404 / Outside the atlas</p><h1>This address is<br /><em>not in the network.</em></h1><p>Search the index for a mathematical object or its stable identifier.</p><a class="button button-ink" href={url('index/')}>Open the index ↗</a></div></BaseLayout>

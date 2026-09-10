@@ -1,0 +1,24 @@
+---
+import Header from '../components/Header.astro';
+import '../styles/global.css';
+import 'katex/dist/katex.min.css';
+import { url } from '../lib/graph';
+interface Props { title?: string; description?: string; active?: string; graph?: boolean }
+const { title = 'The structure behind the paper', description = 'Math Overlord — a visual mathematical knowledge network. Explore the ideas, results and questions in Alex Gomez’s research atlas.', active = 'Research', graph = false } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} /><meta name="theme-color" content="#182c45" />
+    <link rel="icon" type="image/svg+xml" href={url('favicon.svg')} />
+    <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
+    <title>{title} · Math Overlord</title>
+  </head>
+  <body class:list={[graph && 'graph-page']}>
+    <a href="#main" class="skip-link">Skip to content</a>
+    <Header active={active} />
+    <main id="main"><slot /></main>
+    {!graph && <footer class="site-footer"><span>MATH OVERLORD <small>Beta 0.1</small></span><span>A research atlas · Alex Gomez</span><a href="https://github.com/alequisGS/math-overlod">Source & research history ↗</a></footer>}
+  </body>
+</html>

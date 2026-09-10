@@ -1,0 +1,26 @@
+---
+import type { GraphData } from '../lib/graph';
+import GraphControls from './GraphControls.astro';
+import NodePanel from './NodePanel.astro';
+interface Props { data: GraphData; compact?: boolean; selected?: string; label?: string }
+const { data, compact = false, selected, label = 'Mathematical research network' } = Astro.props;
+---
+<research-graph class:list={['research-graph', compact && 'compact']} data-compact={String(compact)} data-selected={selected}>
+  <script is:inline type="application/json" data-graph-data set:html={JSON.stringify(data).replaceAll('<', '\u003c')} />
+  {!compact && <GraphControls />}
+  <div class="graph-workspace">
+    <div class="graph-canvas" data-canvas role="img" aria-label={label}></div>
+    {!compact && <><div class="cluster-key"><span>01 / Log del Pezzo</span><span>02 / Categorical genus</span><span>03 / Mirrors & periods</span></div><NodePanel /></>}
+    <div class="graph-navigation" aria-label="Graph navigation">
+      <button data-zoom-in aria-label="Zoom in">+</button><button data-zoom-out aria-label="Zoom out">−</button><button data-fit>Fit</button>
+      {!compact && <label class="label-toggle"><input data-labels type="checkbox" checked /> Labels</label>}
+    </div>
+    <p class="graph-message" data-message role="status" aria-live="polite"></p>
+  </div>
+  {!compact && <div class="graph-bottom"><div class="shape-legend"><span>● Concept / definition</span><span>▪ Result</span><span>◆ Example</span><span>⬡ Project</span><span>◇ Open question</span></div><span>Dashed outline: unfinished · Select an edge to read its meaning</span></div>}
+  <details class="graph-accessible"><summary>{compact ? 'Objects in this neighborhood' : 'Browse visible objects by keyboard'} <span data-count>{data.nodes.length}</span></summary><ul data-object-list>{data.nodes.map(n => <li data-object={n.id}><button data-select-node={n.id}>{n.shortTitle}</button><a href={n.href}><code>{n.id}</code> ↗</a></li>)}</ul></details>
+  <noscript><p>The interactive graph needs JavaScript. Every mathematical object remains available through the links above and the Index.</p></noscript>
+</research-graph>
+<script>
+  import '../scripts/research-graph';
+</script>

@@ -1,0 +1,6 @@
+---
+import { statusLabels, statusSymbols, type statuses } from '../lib/model';
+interface Props { status: typeof statuses[number] }
+const { status } = Astro.props;
+---
+<span class:list={['status', `status-${status}`]}><span aria-hidden="true">{statusSymbols[status]}</span> {statusLabels[status]}</span>

@@ -1,0 +1,31 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import StatusBadge from '../../components/StatusBadge.astro';
+import { getAtlas, nodeUrl } from '../../lib/graph';
+import { projects, statuses, statusLabels } from '../../lib/model';
+const nodes = (await getAtlas()).map(e => e.data);
+const sections = [
+  {title:'Concepts',types:['concept']}, {title:'Definitions',types:['definition']},
+  {title:'Results',types:['theorem','lemma','proposition','corollary']}, {title:'Examples',types:['example']},
+  {title:'Constructions & computations',types:['construction','computation']},
+  {title:'Open problems & conjectures',types:['open-problem','conjecture']}, {title:'Projects',types:['project']}, {title:'Papers',types:['paper']},
+];
+---
+<BaseLayout title="Mathematical index" active="Index">
+  <div class="page-width document-intro"><p class="eyebrow">The mathematical index</p><h1>Every object.<br /><em>A permanent address.</em></h1><p>A text-first route through the atlas. Search a name, idea, or stable identifier.</p></div>
+  <div class="page-width index-view">
+    <div class="index-controls"><label class="search-control"><span>Search the index</span><input id="index-search" type="search" placeholder="e.g. Euler, X10-001, mirror…" /></label><label><span>Project</span><select id="index-project"><option value="">All research</option>{Object.entries(projects).map(([id,p])=><option value={id}>{p.short}</option>)}</select></label><label><span>Status</span><select id="index-status"><option value="">All statuses</option>{statuses.map(s=><option value={s}>{statusLabels[s]}</option>)}</select></label><button id="index-reset" class="text-button">Reset</button></div>
+    <div class="index-summary"><p id="index-count" role="status" aria-live="polite">{nodes.length} mathematical objects</p><span>Identifier / Object / Status</span></div>
+    {sections.map(s => <section class="index-group" data-index-group><h2>{s.title} <small>{nodes.filter(n=>s.types.includes(n.type)).length}</small></h2><ul>{nodes.filter(n=>s.types.includes(n.type)).map(n=><li data-index-row data-project={n.project} data-status={n.status} data-search={`${n.id} ${n.title} ${n.summary} ${n.tags.join(' ')}`.toLowerCase()}><a href={nodeUrl(n.id)}><code>{n.id}</code><span>{n.title}<small>{projects[n.project].short}</small></span><StatusBadge status={n.status} /></a></li>)}</ul></section>)}
+    <p id="index-empty" hidden>No objects match these filters. Try another term or reset the index.</p>
+  </div>
+</BaseLayout>
+<script>
+  const search=document.querySelector<HTMLInputElement>('#index-search')!;
+  const project=document.querySelector<HTMLSelectElement>('#index-project')!;
+  const status=document.querySelector<HTMLSelectElement>('#index-status')!;
+  const rows=[...document.querySelectorAll<HTMLElement>('[data-index-row]')];
+  function filter(){let count=0;const q=search.value.trim().toLowerCase();rows.forEach(row=>{row.hidden=!(row.dataset.search!.includes(q)&&(!project.value||row.dataset.project===project.value)&&(!status.value||row.dataset.status===status.value));if(!row.hidden)count++;});document.querySelectorAll<HTMLElement>('[data-index-group]').forEach(group=>{const visible=[...group.querySelectorAll<HTMLElement>('[data-index-row]')].filter(row=>!row.hidden).length;group.hidden=visible===0;group.querySelector('h2 small')!.textContent=String(visible);});document.querySelector('#index-count')!.textContent=`${count} of ${rows.length} mathematical objects`;document.querySelector<HTMLElement>('#index-empty')!.hidden=count>0;}
+  search.addEventListener('input',filter);[project,status].forEach(s=>s.addEventListener('change',filter));document.querySelector('#index-reset')!.addEventListener('click',()=>{search.value='';project.value='';status.value='';filter();search.focus();});
+</script>
+

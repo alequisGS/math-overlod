@@ -1,0 +1,10 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ResearchGraph from '../components/ResearchGraph.astro';
+import { getAtlas, graphData, url } from '../lib/graph';
+const data = graphData((await getAtlas()).map(e => e.data));
+---
+<BaseLayout title="Research graph" active="Graph" graph>
+  <div class="graph-heading"><div><span class="eyebrow">The research network</span><h1>Mathematics, in relation.</h1></div><p>{data.nodes.length} objects · {data.edges.length} semantic relations<br /><a href={url('index/')}>Prefer a text view? Open the index ↗</a></p></div>
+  <ResearchGraph data={data} />
+</BaseLayout>

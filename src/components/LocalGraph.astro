@@ -1,0 +1,10 @@
+---
+import ResearchGraph from './ResearchGraph.astro';
+import { graphData, type MathNode } from '../lib/graph';
+import { normalizedRelations } from '../lib/relations';
+interface Props { nodes: MathNode[]; id: string }
+const { nodes, id } = Astro.props;
+const ids = new Set([id]);
+nodes.forEach(n => normalizedRelations(n).forEach(r => { if (n.id === id) ids.add(r.target); if (r.target === id) ids.add(n.id); }));
+---
+<ResearchGraph data={graphData(nodes.filter(n => ids.has(n.id)))} compact selected={id} label={`Immediate mathematical neighborhood of ${id}`} />
