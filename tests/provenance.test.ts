@@ -22,6 +22,16 @@ import { aboutGraphEdges } from "../src/lib/graph-data.ts";
 const fragment = sourceFragments[0];
 const attestation = sourceAttestations[0];
 const snapshot = sourceSnapshotFor(fragment)!;
+const theoremFragmentTargets = {
+  "FRAG-X10-MAIN-SING": "X10-SING-CLAIM-001",
+  "FRAG-X10-MAIN-RES": "X10-RES-CLAIM-001",
+  "FRAG-X10-MAIN-EC": "X10-EC-CLAIM-001",
+  "FRAG-X10-MAIN-KKS": "X10-KKS-CLAIM-001",
+  "FRAG-X10-MAIN-GEN": "X10-GEN-CLAIM-001",
+} as const;
+const theoremFragments = sourceFragments.filter(
+  candidate => candidate.container.latexLabel === "thm:X10-main",
+);
 const claimNodes = [
   { id: "X10-RES-CLAIM-001", type: "claim" },
   { id: "X10-SING-CLAIM-001", type: "claim" },
@@ -80,6 +90,184 @@ test("the pilot fragment attests the resolution claim", () => {
   assert.equal(attestation.target, "X10-RES-CLAIM-001");
   assert.doesNotThrow(() => validateProvenance(claimNodes, [fragment], [attestation]));
   assert.equal(evaluateAttestation(attestation, fragment, snapshot).semanticReview, "accepted");
+});
+
+test("thm:X10-main unfolds into five independently attested fragments", () => {
+  assert.deepEqual(
+    theoremFragments.map(candidate => candidate.id).sort(),
+    Object.keys(theoremFragmentTargets).sort(),
+  );
+  assert.equal(new Set(theoremFragments.map(candidate => candidate.id)).size, 5);
+  assert.equal(
+    new Set(
+      sourceAttestations
+        .filter(candidate => candidate.fragment in theoremFragmentTargets)
+        .map(candidate => candidate.target),
+    ).size,
+    5,
+  );
+  for (const [fragmentId, target] of Object.entries(theoremFragmentTargets)) {
+    const currentFragment = theoremFragments.find(candidate => candidate.id === fragmentId)!;
+    const currentAttestation = sourceAttestations.find(
+      candidate => candidate.fragment === fragmentId,
+    )!;
+    assert.equal(currentAttestation.target, target);
+    assert.equal(currentAttestation.relation, "asserts");
+    assert.equal(currentAttestation.review.state, "accepted");
+    assert.equal(
+      evaluateAttestation(
+        currentAttestation,
+        currentFragment,
+        sourceSnapshotFor(currentFragment),
+      ).semanticReview,
+      "accepted",
+    );
+  }
+  assert.ok(
+    theoremFragments.every(
+      candidate =>
+        candidate.container.environment === "theorem" &&
+        candidate.container.printedNumber === "1.3",
+    ),
+  );
+});
+
+test("the reviewed resolution fragment and claim retain their stable pilot identities", () => {
+  assert.equal(fragment.id, "FRAG-X10-MAIN-RES");
+  assert.equal(attestation.id, "ATT-X10-MAIN-RES-001");
+  assert.equal(attestation.target, "X10-RES-CLAIM-001");
+  assert.equal(fragment.assertionSelections[0]?.startLine, 292);
+  assert.equal(fragment.assertionSelections[0]?.endLine, 294);
+  assert.equal(
+    fragment.assertionSelections[0]?.contentHash,
+    "cf255b3858f6f9f342589e958be9f6cebe899d3369d35168710d28f190c83bb2",
+  );
+});
+
+test("rejecting one theorem attestation leaves sibling claims accepted", () => {
+  const rejectedFragmentId = "FRAG-X10-MAIN-EC";
+  for (const currentAttestation of sourceAttestations.filter(
+    candidate => candidate.fragment in theoremFragmentTargets,
+  )) {
+    const currentFragment = theoremFragments.find(
+      candidate => candidate.id === currentAttestation.fragment,
+    )!;
+    const reviewState = currentAttestation.fragment === rejectedFragmentId
+      ? "rejected"
+      : currentAttestation.review.state;
+    const reviewed = {
+      ...currentAttestation,
+      review: { ...currentAttestation.review, state: reviewState },
+    } as SourceAttestation;
+    const status = evaluateAttestation(
+      reviewed,
+      currentFragment,
+      sourceSnapshotFor(currentFragment),
+    );
+    assert.equal(
+      status.semanticReview,
+      currentAttestation.fragment === rejectedFragmentId ? "rejected" : "accepted",
+    );
+  }
+});
+
+test("changing one assertion requires review only for that fragment", () => {
+  const changedFragment = structuredClone(
+    theoremFragments.find(candidate => candidate.id === "FRAG-X10-MAIN-KKS")!,
+  ) as SourceFragment;
+  changedFragment.assertionSelections[0]!.selectedText += " changed";
+  changedFragment.assertionSelections[0]!.contentHash = "a".repeat(64);
+  const changedAttestation = sourceAttestations.find(
+    candidate => candidate.fragment === changedFragment.id,
+  )!;
+  assert.equal(
+    evaluateAttestation(
+      changedAttestation,
+      changedFragment,
+      sourceSnapshotFor(changedFragment),
+    ).semanticReview,
+    "needs-review",
+  );
+  for (const sibling of theoremFragments.filter(
+    candidate => candidate.id !== changedFragment.id,
+  )) {
+    const siblingAttestation = sourceAttestations.find(
+      candidate => candidate.fragment === sibling.id,
+    )!;
+    assert.equal(
+      evaluateAttestation(
+        siblingAttestation,
+        sibling,
+        sourceSnapshotFor(sibling),
+      ).semanticReview,
+      "accepted",
+    );
+  }
+});
+
+test("the five theorem claims survive printed renumbering", () => {
+  for (const currentFragment of theoremFragments) {
+    const renumberedSnapshot = structuredClone(sourceSnapshotFor(currentFragment)!);
+    renumberedSnapshot.container.printedNumber = "9.9";
+    const currentAttestation = sourceAttestations.find(
+      candidate => candidate.fragment === currentFragment.id,
+    )!;
+    const status = evaluateAttestation(
+      currentAttestation,
+      currentFragment,
+      renumberedSnapshot,
+    );
+    assert.equal(status.semanticReview, "accepted");
+    assert.equal(status.freshness.state, "locator-changed");
+    assert.equal(
+      currentAttestation.target,
+      theoremFragmentTargets[currentFragment.id as keyof typeof theoremFragmentTargets],
+    );
+  }
+});
+
+test("new theorem claims expose structural about edges without owning the source environment", async () => {
+  const expectedAbout = {
+    "X10-SING-CLAIM-001": ["X10-001", "X10-SING-001"],
+    "X10-EC-CLAIM-001": ["X10-STACK-001", "X10-EC-001"],
+    "X10-KKS-CLAIM-001": ["X10-001", "X10-KKS-001", "X10-SOD-001"],
+    "X10-GEN-CLAIM-001": ["X10-001", "X10-BLOW-001"],
+  } as const;
+  const records = await Promise.all(
+    Object.keys(expectedAbout).map(async claimId => {
+      const slug = claimId.toLowerCase();
+      const record = await readFile("src/content/nodes/" + slug + ".md", "utf8");
+      const about = record.match(/about:\n((?:  - "[^"]+"\n?)+)/)?.[1] ?? "";
+      const targets = [...about.matchAll(/- "([^"]+)"/g)].map(match => match[1]);
+      return { id: claimId, about: targets };
+    }),
+  );
+  const nodes = records.flatMap(record => [
+    record,
+    ...record.about.map(id => ({ id, about: [] })),
+  ]);
+  const edges = aboutGraphEdges(nodes);
+  for (const record of records) {
+    assert.deepEqual(record.about, expectedAbout[record.id as keyof typeof expectedAbout]);
+    for (const target of record.about) {
+      const edgeId = record.id + ":about:" + target;
+      assert.deepEqual(
+        edges.find(edge => edge.id === edgeId),
+        {
+          id: edgeId,
+          source: record.id,
+          target,
+          type: "about",
+          kind: "structural",
+          note: undefined,
+        },
+      );
+    }
+  }
+  assert.equal(
+    theoremFragments.some(candidate => candidate.id === "label:thm:X10-main"),
+    false,
+  );
 });
 
 test("a claim can receive another attestation without changing its ID", () => {
