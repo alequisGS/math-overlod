@@ -3,10 +3,11 @@ id: "CATGEN-001"
 title: "Categorical genus"
 shortTitle: "Categorical genus"
 type: "concept"
-status: "in-progress"
+claimStatus: "in-progress"
+publicationStatus: "unpublished"
 summary: "An emerging invariant program motivated by the antisymmetric part of the Euler pairing."
 authors: []
-project: "CATGEN"
+projects: ["CATGEN"]
 tags: ["categorical invariants","derived categories"]
 references: [{"title":"Research outline supplied by Alex Gomez","note":"Beta seed content; editorial descriptions are not an independent proof review."}]
 dependsOn: []

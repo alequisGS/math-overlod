@@ -1,0 +1,23 @@
+{
+  "X10": {
+    "title": "Log del Pezzo surfaces",
+    "short": "X₁₀ / Geometry",
+    "description": "From a singular surface to the structure of its derived category.",
+    "anchor": "X10-001",
+    "direction": "Geometry → categories"
+  },
+  "CATGEN": {
+    "title": "Categorical genus",
+    "short": "Categorical genus",
+    "description": "From the Euler pairing to a program of categorical invariants.",
+    "anchor": "CATGEN-001",
+    "direction": "Categories → invariants"
+  },
+  "HMS": {
+    "title": "Mirror symmetry & periods",
+    "short": "Mirrors / Periods",
+    "description": "From categorical structure to periods and arithmetic questions.",
+    "anchor": "HMS-001",
+    "direction": "Categories ↔ mirrors"
+  }
+}

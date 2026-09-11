@@ -3,10 +3,11 @@ id: "HMS-MON-001"
 title: "Monodromy"
 shortTitle: "Monodromy"
 type: "concept"
-status: "in-progress"
+claimStatus: "in-progress"
+publicationStatus: "unpublished"
 summary: "The action obtained by transporting local data around loops in parameter space."
 authors: []
-project: "HMS"
+projects: ["HMS"]
 tags: ["mirror symmetry","arithmetic geometry"]
 references: [{"title":"Research outline supplied by Alex Gomez","note":"Beta seed content; editorial descriptions are not an independent proof review."}]
 dependsOn: []

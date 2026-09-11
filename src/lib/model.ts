@@ -1,3 +1,4 @@
+import projectData from "../content/projects.json" with { type: "json" };
 export const nodeTypes = [
   "concept",
   "definition",
@@ -14,7 +15,7 @@ export const nodeTypes = [
   "paper",
 ] as const;
 export const statuses = [
-  "published",
+  "source-claimed",
   "proved",
   "verified",
   "computational",
@@ -38,7 +39,7 @@ export const relationTypes = [
 export type RelationType = (typeof relationTypes)[number];
 export type Relation = { target: string; type: RelationType; note?: string };
 export const statusLabels: Record<(typeof statuses)[number], string> = {
-  published: "Published",
+  "source-claimed": "Source-claimed",
   proved: "Proved",
   verified: "Verified",
   computational: "Computational",
@@ -48,7 +49,7 @@ export const statusLabels: Record<(typeof statuses)[number], string> = {
   abandoned: "Abandoned",
 };
 export const statusSymbols: Record<(typeof statuses)[number], string> = {
-  published: "▣",
+  "source-claimed": "◇",
   proved: "■",
   verified: "✓",
   computational: "⌘",
@@ -57,27 +58,24 @@ export const statusSymbols: Record<(typeof statuses)[number], string> = {
   "in-progress": "◌",
   abandoned: "×",
 };
-export const projects = {
-  X10: {
-    title: "Log del Pezzo surfaces",
-    short: "X₁₀ / Geometry",
-    description:
-      "From a singular surface to the structure of its derived category.",
-    anchor: "X10-001",
-  },
-  CATGEN: {
-    title: "Categorical genus",
-    short: "Categorical genus",
-    description:
-      "From the Euler pairing to a program of categorical invariants.",
-    anchor: "CATGEN-001",
-  },
-  HMS: {
-    title: "Mirror symmetry & periods",
-    short: "Mirrors / Periods",
-    description:
-      "From categorical structure to periods and arithmetic questions.",
-    anchor: "HMS-001",
-  },
-} as const;
-export type Project = keyof typeof projects;
+export const publicationStatuses = [
+  "draft",
+  "unpublished",
+  "preprint",
+  "published",
+] as const;
+export const publicationLabels = {
+  draft: "Draft",
+  unpublished: "Unpublished",
+  preprint: "Preprint",
+  published: "Published",
+};
+export interface ProjectDefinition {
+  title: string;
+  short: string;
+  description: string;
+  anchor: string;
+  direction: string;
+}
+export const projects: Record<string, ProjectDefinition> = projectData;
+export type Project = string;

@@ -3,10 +3,11 @@ id: "CATGEN-PROJ-001"
 title: "The categorical genus generalization program"
 shortTitle: "Categorical genus program"
 type: "project"
-status: "in-progress"
+claimStatus: "in-progress"
+publicationStatus: "unpublished"
 summary: "Develop definitions, examples and invariance questions beyond the initial Euler calculation."
 authors: []
-project: "CATGEN"
+projects: ["CATGEN"]
 tags: ["categorical invariants","derived categories"]
 references: [{"title":"Research outline supplied by Alex Gomez","note":"Beta seed content; editorial descriptions are not an independent proof review."}]
 dependsOn: []

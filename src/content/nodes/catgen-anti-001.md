@@ -3,10 +3,11 @@ id: "CATGEN-ANTI-001"
 title: "The antisymmetric Euler form"
 shortTitle: "Antisymmetric Euler form"
 type: "definition"
-status: "in-progress"
+claimStatus: "in-progress"
+publicationStatus: "unpublished"
 summary: "The skew part of the Euler pairing isolates its failure to be symmetric."
 authors: []
-project: "CATGEN"
+projects: ["CATGEN"]
 tags: ["categorical invariants","derived categories"]
 references: [{"title":"Research outline supplied by Alex Gomez","note":"Beta seed content; editorial descriptions are not an independent proof review."}]
 dependsOn: ["CATGEN-EUL-001"]

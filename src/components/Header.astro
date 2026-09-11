@@ -4,6 +4,6 @@ const { active = 'Research' } = Astro.props;
 const links = [['Research', ''], ['Graph', 'graph/'], ['Index', 'index/'], ['Timeline', 'timeline/']];
 ---
 <header class="site-header">
-  <a class="wordmark" href={url()} aria-label="Math Overlord home"><span class="mark" aria-hidden="true">M<span>∴</span></span> MATH OVERLORD <small>β 0.1</small></a>
+  <a class="wordmark" href={url()} aria-label="Math Overlord home"><span class="mark" aria-hidden="true">M<span>∴</span></span> MATH OVERLORD <small>β 0.2</small></a>
   <nav aria-label="Main navigation">{links.map(([label, path]) => <a href={url(path)} aria-current={active === label ? 'page' : undefined}>{label}</a>)}</nav>
 </header>

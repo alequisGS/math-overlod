@@ -3,10 +3,11 @@ id: "CATGEN-QUOT-001"
 title: "Quotient singularities"
 shortTitle: "Quotient singularities"
 type: "concept"
-status: "in-progress"
+claimStatus: "in-progress"
+publicationStatus: "unpublished"
 summary: "Local quotient models connect singular spaces to smooth stack geometry."
 authors: []
-project: "CATGEN"
+projects: ["CATGEN"]
 tags: ["categorical invariants","derived categories"]
 references: [{"title":"Research outline supplied by Alex Gomez","note":"Beta seed content; editorial descriptions are not an independent proof review."}]
 dependsOn: []

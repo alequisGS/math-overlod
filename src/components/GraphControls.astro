@@ -1,10 +1,11 @@
 ---
-import { nodeTypes, statuses, statusLabels, projects } from '../lib/model';
+import { nodeTypes, statuses, statusLabels, projects, publicationStatuses, publicationLabels } from '../lib/model';
 ---
 <div class="graph-controls">
   <label class="search-control"><span>Find an object</span><input data-search type="search" placeholder="Title, stable ID, or idea…" autocomplete="off" /></label>
   <label><span>Project</span><select data-project><option value="">All research</option>{Object.entries(projects).map(([id, p]) => <option value={id}>{p.short}</option>)}</select></label>
   <label><span>Type</span><select data-type><option value="">All types</option>{nodeTypes.map(t => <option value={t}>{t.replaceAll('-', ' ')}</option>)}</select></label>
-  <label><span>Status</span><select data-status><option value="">All statuses</option>{statuses.map(s => <option value={s}>{statusLabels[s]}</option>)}</select></label>
+  <label><span>Claim status</span><select data-status><option value="">All statuses</option>{statuses.map(s => <option value={s}>{statusLabels[s]}</option>)}</select></label>
+  <label><span>Publication</span><select data-publication><option value="">All publications</option>{publicationStatuses.map(s => <option value={s}>{publicationLabels[s]}</option>)}</select></label>
   <button class="text-button" data-reset>Reset</button>
 </div>

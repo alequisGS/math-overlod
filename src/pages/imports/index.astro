@@ -1,0 +1,13 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { stagedPapers,proposals } from '../../../scripts/ingest/staging';
+import { url } from '../../lib/graph';
+const papers=await stagedPapers(process.cwd());
+---
+<BaseLayout title="Import review · Beta 0.2">
+  <div class="page-width document-intro"><p class="eyebrow">Beta 0.2 · Source review</p><h1>What the source says.<br/><em>What needs review.</em></h1><p>These are source proposals, outside the curated mathematical graph. This static page is informational. Decisions are made through the local CLI and appear here after a rebuild.</p></div>
+  <div class="page-width import-list">
+    <p class="source-notice">NEW · MATCHED · CHANGED · POSSIBLE DUPLICATE · NEEDS REVIEW · ACCEPTED · REJECTED. A match score measures text overlap, not mathematical equivalence or probability.</p>
+    {papers.length?papers.map(p=><article><h2><a href={url(`imports/${p.source.paperDirectory}/`)}>{p.source.paperDirectory}</a></h2><p>{p.metadata.title}</p><p>{p.objects.length} mathematical proposals · {p.citations.length} bibliography entries · {proposals(p).filter(o=>o.reviewState==='ACCEPTED').length} accepted</p><p><code>{p.source.commit.slice(0,12)}</code> · {p.source.repository}</p></article>):<p>No papers staged. Run <code>npm run import:papers</code>, then rebuild this site.</p>}
+  </div>
+</BaseLayout>

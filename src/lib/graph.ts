@@ -1,5 +1,7 @@
 import { getCollection, type CollectionEntry } from "astro:content";
 import { normalizedRelations, validateNetwork } from "./relations";
+import { validateProjectMembership } from "./ontology";
+import { projects } from "./model";
 export type MathNode = CollectionEntry<"nodes">["data"];
 export const url = (path = "") =>
   `${import.meta.env.BASE_URL.replace(/\/$/, "")}/${path.replace(/^\//, "")}`;
@@ -9,6 +11,13 @@ export async function getAtlas() {
     a.data.id.localeCompare(b.data.id),
   );
   validateNetwork(entries.map((e) => e.data));
+  validateProjectMembership(
+    entries.map((e) => e.data),
+    projects,
+  );
+  for (const [key, project] of Object.entries(projects))
+    if (!entries.some((e) => e.data.id === project.anchor))
+      throw new Error(`Project ${key} has an unknown anchor ${project.anchor}`);
   return entries;
 }
 export function graphData(nodes: MathNode[]) {
@@ -16,6 +25,7 @@ export function graphData(nodes: MathNode[]) {
   return {
     nodes: nodes.map((n) => ({
       ...n,
+      sources: undefined,
       href: nodeUrl(n.id),
       relations: normalizedRelations(n),
     })),

@@ -1,0 +1,45 @@
+---
+import path from 'node:path';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import LatexSource from '../../components/LatexSource.astro';
+import { stagedPapers,proposals,stagingPath } from '../../../scripts/ingest/staging';
+import { readJson } from '../../../scripts/ingest/files';
+import type { ImportReport } from '../../../scripts/ingest/types';
+import { sourceLinks } from '../../lib/source-links';
+import { safeExternalUrl, latexPreview } from '../../lib/latex-preview';
+import { url,nodeUrl } from '../../lib/graph';
+export async function getStaticPaths(){return (await stagedPapers(process.cwd())).map(paper=>({params:{paper:paper.source.paperDirectory},props:{paper}}));}
+const {paper}=Astro.props;
+const report=await readJson<ImportReport>(path.join(stagingPath(process.cwd(),paper.source.paperDirectory),'report.json'));
+const all=proposals(paper);const anchor=(key:string)=>`proposal-${encodeURIComponent(key)}`;
+---
+<BaseLayout title={`Review ${paper.source.paperDirectory} · Beta 0.2`}>
+  <div class="page-width import-review">
+    <p class="breadcrumbs"><a href={url('imports/')}>Import review</a> / {paper.source.paperDirectory}</p>
+    <header class="document-intro"><p class="eyebrow">Beta · Unreviewed source proposals</p><h1>{paper.source.paperDirectory}</h1><LatexSource text={paper.metadata.title??'Untitled paper'} macros={paper.macros}/><p>{paper.metadata.authors.join(', ')}</p></header>
+    <p class="source-notice">This staging view is outside the curated graph. “Theorem” describes the author’s environment, not independent verification. Accept/reject decisions use the local CLI; this page changes on rebuild.</p>
+    <dl class="source-metadata"><dt>Working repository</dt><dd>{paper.source.repository} · {paper.source.branch}</dd><dt>Imported commit</dt><dd><code>{paper.source.commit}</code></dd><dt>Retrieved</dt><dd>{paper.source.retrievedAt}</dd><dt>Bundle</dt><dd>{paper.source.root}/{paper.source.paperDirectory} · {paper.source.files.map(f=>f.path).join(', ')}</dd></dl>
+    <p>{paper.objects.length} objects · {paper.sections.length} sections/subsections · {paper.citations.length} bibliography entries · {paper.citationKeys.length} cited keys</p>
+    {report&&<section><h2>Synchronization report</h2><p>{report.sourceChanged?'Source commit changed.':'Source commit unchanged.'} Previous: {report.previousCommit??'first import'}</p><div class="sync-counts">{Object.entries(report.diff).map(([key,list])=><details><summary>{key}: {list.length}</summary><ul>{list.map((item:string)=><li><code>{item}</code></li>)}</ul></details>)}</div><p>Removed objects remain recorded in this report; curated nodes are never deleted by synchronization.</p></section>}
+    {paper.diagnostics.length>0&&<section><h2>Diagnostics</h2><ul>{paper.diagnostics.map(d=><li>{d.severity}: {d.message} {d.file}:{d.line}</li>)}</ul></section>}
+    <details><summary>Paper structure · {paper.sections.length} headings</summary><ol>{paper.sections.map(s=><li>{s.number} {s.title} <small>{s.sourceFile}:{s.startLine}</small></li>)}</ol></details>
+    <nav class="proposal-nav" aria-label="Detected objects"><h2>Detected objects</h2><ul>{all.map(o=><li><a href={`#${anchor(o.sourceKey)}`}>{o.environment} {o.printedNumber} · {o.latexLabel??o.sourceKey}</a><span class="review-state">{o.reviewState}</span></li>)}</ul></nav>
+    {all.map(object=>{const links=sourceLinks({...paper.source,path:object.sourceFile,startLine:object.startLine,endLine:object.endLine});const command=`npm run import:accept -- ${paper.source.paperDirectory} ${object.latexLabel??object.sourceKey}`;return <article class="import-object" id={anchor(object.sourceKey)}>
+      <header><span class="review-state">{object.reviewState}</span><p class="eyebrow">{object.environment} {object.printedNumber??(object.environment==='paper'?'':'· number unavailable')}</p><h2 set:html={latexPreview(object.title??object.latexLabel??object.environment,paper.macros)}/><code>{object.sourceKey}</code></header>
+      <p set:html={latexPreview([object.section,object.subsection].filter(Boolean).join(" / "),paper.macros)}/>
+      {object.numberingNote&&<p class="small muted">{object.numberingNote}</p>}
+      <p>{object.sourceFile}:{object.startLine}–{object.endLine}</p><p class="source-links"><a href={links.pinned}>Imported version ↗</a><a href={links.current}>Current source ↗</a><a href={links.history}>History ↗</a></p>
+      {object.spans.length>1&&<details><summary>All source spans</summary><ul>{object.spans.map(s=><li>{s.file}:{s.startLine}–{s.endLine}</li>)}</ul></details>}
+      <h3>Statement · source-claimed</h3><LatexSource text={object.statement} macros={paper.macros}/>
+      {object.proof&&<details class="proof-source"><summary>Immediately following proof · original source</summary><LatexSource text={object.proof} macros={paper.macros}/></details>}
+      {object.warnings.length>0&&<ul class="source-notice">{object.warnings.map(w=><li>{w}</li>)}</ul>}
+      <h3>Possible existing-node matches</h3><p class="small">Heuristic scores are review aids, not probabilities or proof of equivalence. No fuzzy match is merged automatically.</p>
+      {object.candidates.length?<ul>{object.candidates.map(c=><li><a href={nodeUrl(c.nodeId)}>{c.nodeId}</a> · score {c.confidence} · {c.exact?'accepted source identity':'possible duplicate'}<ul>{c.reasons.map(reason=><li>{reason}</li>)}</ul></li>)}</ul>:<p>No candidate met the text-matching threshold.</p>}
+      <h3>Proposed source references</h3><p class="small">Each edge means “source-refers-to.” Assigning uses, implies, or other mathematical semantics requires a separate human decision.</p>
+      {object.references.length?<ul>{object.references.map(r=><li><code>source-refers-to</code> → {r.targetSourceKey?<a href={`#${anchor(r.targetSourceKey)}`}>{r.label}</a>:<code>{r.label}</code>} · {r.context} · \{r.command} · {r.targetKind??'unresolved'}</li>)}</ul>:<p>No explicit internal reference in this object.</p>}
+      <p>Citations: {object.citations.length?object.citations.map((key,i)=><>{i>0?', ':''}{paper.citations.some(c=>c.key===key)?<a href={`#bib-${encodeURIComponent(key)}`}>{key}</a>:key}</>):'none'}</p>
+      <details><summary>Review and accept through the CLI</summary><p>Suggested type: {object.proposedNodeType}. Suggested new ID: <code>{object.suggestedId}</code>. Choose project membership explicitly.</p><p>Inspect the full diff first. Add <code>--write</code> only after reviewing. Existing prose, stable IDs, relations, and claim status are retained.</p><pre><code>{object.candidates.length?`${command} --match ${object.candidates[0].nodeId} --dry-run`:`${command} --id ${object.suggestedId} --projects PROJECT --dry-run`}</code></pre><p>To reject: <code>{`npm run import:reject -- ${paper.source.paperDirectory} ${object.latexLabel??object.sourceKey} --note "Your review reason" --write`}</code></p></details>
+    </article>})}
+    <section class="import-bibliography"><h2>Bibliography</h2><p>Reference records only; these entries are not graph nodes.</p><ol>{paper.citations.map(c=><li id={`bib-${encodeURIComponent(c.key)}`}><h3>{c.key} {c.used?'':'· uncited'}</h3><p>{c.authors.join('; ')} · {c.title} · {c.year} · {c.journal}</p><p>{c.doi&&<>DOI: <a href={`https://doi.org/${encodeURIComponent(c.doi)}`}>{c.doi}</a> </>}{c.eprint&&<>eprint: {c.eprint} </>}{safeExternalUrl(c.url)&&<a href={safeExternalUrl(c.url)}>Reference URL ↗</a>}</p><details><summary>Original BibTeX</summary><pre><code>{c.raw}</code></pre></details></li>)}</ol></section>
+  </div>
+</BaseLayout>

@@ -3,10 +3,11 @@ id: "HMS-KLO-001"
 title: "Kloosterman motives"
 shortTitle: "Kloosterman motives"
 type: "concept"
-status: "in-progress"
+claimStatus: "in-progress"
+publicationStatus: "unpublished"
 summary: "An arithmetic direction involving motivic structures associated with Kloosterman phenomena."
 authors: []
-project: "HMS"
+projects: ["HMS"]
 tags: ["mirror symmetry","arithmetic geometry"]
 references: [{"title":"Research outline supplied by Alex Gomez","note":"Beta seed content; editorial descriptions are not an independent proof review."}]
 dependsOn: []

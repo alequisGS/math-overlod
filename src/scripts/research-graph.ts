@@ -1,6 +1,11 @@
 import cytoscape, { type Core, type StylesheetJson } from "cytoscape";
 import type { GraphData } from "../lib/graph";
-import { projects, statusLabels, statusSymbols } from "../lib/model";
+import {
+  projects,
+  publicationLabels,
+  statusLabels,
+  statusSymbols,
+} from "../lib/model";
 
 const styles: StylesheetJson = [
   {
@@ -26,11 +31,11 @@ const styles: StylesheetJson = [
     },
   },
   {
-    selector: 'node[project = "CATGEN"]',
+    selector: "node[groupTone = 1]",
     style: { "background-color": "#87879a", "border-color": "#5d5d75" },
   },
   {
-    selector: 'node[project = "HMS"]',
+    selector: "node[groupTone = 2]",
     style: { "background-color": "#78968d", "border-color": "#4a6b60" },
   },
   { selector: 'node[type = "definition"]', style: { "border-width": 3 } },
@@ -82,11 +87,11 @@ const styles: StylesheetJson = [
   },
   {
     selector:
-      'node[status = "in-progress"], node[status = "open"], node[status = "conjectural"]',
+      'node[claimStatus = "in-progress"], node[claimStatus = "open"], node[claimStatus = "conjectural"]',
     style: { "border-style": "dashed" },
   },
   {
-    selector: 'node[status = "abandoned"]',
+    selector: 'node[claimStatus = "abandoned"]',
     style: { "background-opacity": 0.2, "border-style": "dotted" },
   },
   {
@@ -166,21 +171,19 @@ class ResearchGraph extends HTMLElement {
     } else {
       // Stable, metadata-derived clusters. No separate hand-authored graph dataset.
       groups.forEach((project, group) => {
-        const members = data.nodes.filter((n) => n.project === project);
+        const members = data.nodes.filter((n) => n.projects[0] === project);
         const hubs = members.filter((n) => n.type === "project");
         const rest = members.filter((n) => n.type !== "project");
-        const centers = [
-          { x: 260, y: 300 },
-          { x: 810, y: 230 },
-          { x: 1330, y: 310 },
-        ];
-        const c = centers[group];
+        const c = {
+          x: 260 + (group % 3) * 550,
+          y: 300 + Math.floor(group / 3) * 570,
+        };
         hubs.forEach((n, i) =>
           positions.set(n.id, { x: c.x + i * 65, y: c.y }),
         );
         rest.forEach((n, i) => {
           const a = (i / rest.length) * Math.PI * 2 - Math.PI / 2;
-          const r = project === "X10" ? 235 : 200;
+          const r = Math.max(200, Math.min(250, rest.length * 13));
           positions.set(n.id, {
             x: c.x + Math.cos(a) * r,
             y: c.y + Math.sin(a) * r * 0.85,
@@ -192,7 +195,11 @@ class ResearchGraph extends HTMLElement {
       container: canvas,
       elements: [
         ...data.nodes.map((n) => ({
-          data: { ...n, label: n.shortTitle },
+          data: {
+            ...n,
+            groupTone: groups.indexOf(n.projects[0]) % 3,
+            label: n.shortTitle,
+          },
           position: positions.get(n.id),
         })),
         ...data.edges.map((e) => ({ data: e })),
@@ -239,10 +246,17 @@ class ResearchGraph extends HTMLElement {
       text("[data-panel-title]", node.title);
       text("[data-panel-type]", node.type.replaceAll("-", " "));
       const badge = this.querySelector<HTMLElement>("[data-panel-status]")!;
-      badge.className = `status status-${node.status}`;
-      badge.textContent = `${statusSymbols[node.status]} ${statusLabels[node.status]}`;
+      badge.className = `status status-${node.claimStatus}`;
+      badge.textContent = `${statusSymbols[node.claimStatus]} ${statusLabels[node.claimStatus]}`;
+      text(
+        "[data-panel-publication]",
+        publicationLabels[node.publicationStatus],
+      );
       text("[data-panel-summary]", node.summary);
-      text("[data-panel-project]", projects[node.project].title);
+      text(
+        "[data-panel-project]",
+        node.projects.map((p) => projects[p].title).join(" · "),
+      );
       text(
         "[data-panel-provenance]",
         `${node.provenance.replaceAll("-", " ")} · ${node.verification.note}`,
@@ -330,6 +344,8 @@ class ResearchGraph extends HTMLElement {
     const type = this.querySelector<HTMLSelectElement>("[data-type]");
     const status = this.querySelector<HTMLSelectElement>("[data-status]");
     const project = this.querySelector<HTMLSelectElement>("[data-project]");
+    const publication =
+      this.querySelector<HTMLSelectElement>("[data-publication]");
     const applyFilters = () => {
       clear();
       const query = search!.value.trim().toLocaleLowerCase();
@@ -338,8 +354,10 @@ class ResearchGraph extends HTMLElement {
           .filter(
             (n) =>
               (!type!.value || n.type === type!.value) &&
-              (!status!.value || n.status === status!.value) &&
-              (!project!.value || n.project === project!.value) &&
+              (!status!.value || n.claimStatus === status!.value) &&
+              (!project!.value || n.projects.includes(project!.value)) &&
+              (!publication!.value ||
+                n.publicationStatus === publication!.value) &&
               `${n.id} ${n.title} ${n.shortTitle} ${n.summary} ${n.tags.join(" ")}`
                 .toLocaleLowerCase()
                 .includes(query),
@@ -365,7 +383,7 @@ class ResearchGraph extends HTMLElement {
       fit();
     };
     search?.addEventListener("input", applyFilters);
-    [type, status, project].forEach((s) =>
+    [type, status, project, publication].forEach((s) =>
       s?.addEventListener("change", applyFilters),
     );
     const labels = this.querySelector<HTMLInputElement>("[data-labels]");
@@ -377,6 +395,7 @@ class ResearchGraph extends HTMLElement {
       type!.value = "";
       status!.value = "";
       project!.value = "";
+      publication!.value = "";
       labels!.checked = true;
       cy.nodes().removeClass("no-label");
       cy.nodes().positions((n) => positions.get(n.id())!);

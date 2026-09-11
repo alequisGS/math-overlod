@@ -2,6 +2,7 @@
 import { render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import StatusBadge from '../../components/StatusBadge.astro';
+import SourceRecord from '../../components/SourceRecord.astro';
 import LocalGraph from '../../components/LocalGraph.astro';
 import { getAtlas, nodeUrl, url } from '../../lib/graph';
 import { normalizedRelations } from '../../lib/relations';
@@ -18,19 +19,22 @@ const dependencies=outgoing.filter(r=>['depends-on','uses'].includes(r.type));
 const consequences=[...outgoing.filter(r=>['implies','motivates'].includes(r.type)).map(r=>({id:r.target,label:r.type})),...incoming.filter(r=>r.type==='depends-on').map(r=>({id:r.source,label:'depends on this object'}))];
 const examples=incoming.filter(r=>r.type==='example-of');
 const related=[...outgoing.filter(r=>!['depends-on','uses','implies','motivates'].includes(r.type)).map(r=>({id:r.target,label:r.type})),...incoming.filter(r=>!['depends-on','example-of'].includes(r.type)).map(r=>({id:r.source,label:`${r.type} → this object`}))];
+const contained=nodes.filter(n=>n.id!==node.id&&(normalizedRelations(n).some(r=>r.type==='appears-in'&&r.target===node.id)||node.sources.some(p=>p.environment==='paper'&&n.sources.some(s=>s.repository===p.repository&&s.paperDirectory===p.paperDirectory))));
 const sourceFile=entry.filePath?.replaceAll('\\','/').split('src/content/')[1];
 ---
 <BaseLayout title={node.title} description={node.summary} active="Index">
   <article class="math-document page-width">
-    <div class="breadcrumbs"><a href={url('index/')}>Index</a><span>/</span><a href={url(`graph/?project=${node.project}`)}>{projects[node.project].short}</a></div>
-    <header class="math-heading"><div class="object-meta"><code>{node.id}</code><StatusBadge status={node.status} /><span>{node.type.replaceAll('-',' ')}</span></div><h1>{node.title}</h1><p class="lede">{node.summary}</p></header>
+    <div class="breadcrumbs"><a href={url('index/')}>Index</a><span>/</span>{node.projects.map(p=><a href={url(`graph/?project=${p}`)}>{projects[p].short}</a>)}</div>
+    <header class="math-heading"><div class="object-meta"><code>{node.id}</code><StatusBadge status={node.claimStatus} publication={node.publicationStatus} /><span>{node.type.replaceAll('-',' ')}</span></div><h1>{node.title}</h1><p class="lede">{node.summary}</p></header>
     <div class="math-columns"><div class="math-body">
       <Content />
+      {node.sources.length>0&&<section class="references"><h2>Accepted working sources</h2>{node.sources.map(source=><SourceRecord source={source}/>)}</section>}
+      {node.type==='paper'&&<section class="relation-section"><h2>Contained mathematical objects</h2>{contained.length?<ul>{contained.map(n=><li><a href={nodeUrl(n.id)}>{n.title}</a> <code>{n.id}</code></li>)}</ul>:<p>No accepted source objects or appears-in relations recorded yet.</p>}</section>}
       <section class="relation-section"><h2>Dependencies</h2>{dependencies.length?<ul>{dependencies.map(r=><li><span class="relation-label">{r.type}</span><a href={nodeUrl(r.target)}>{byId.get(r.target)!.title}</a> <code>{r.target}</code></li>)}</ul>:<p class="muted">No formal dependencies recorded.</p>}</section>
-      <section class="relation-section"><h2>Consequences & directions</h2>{consequences.length?<ul>{consequences.map(r=><li><span class="relation-label">{r.label}</span><a href={nodeUrl(r.id)}>{byId.get(r.id)!.title}</a><StatusBadge status={byId.get(r.id)!.status} /></li>)}</ul>:<p class="muted">No consequences recorded. This does not assert that none exist.</p>}</section>
+      <section class="relation-section"><h2>Consequences & directions</h2>{consequences.length?<ul>{consequences.map(r=><li><span class="relation-label">{r.label}</span><a href={nodeUrl(r.id)}>{byId.get(r.id)!.title}</a><StatusBadge status={byId.get(r.id)!.claimStatus} /></li>)}</ul>:<p class="muted">No consequences recorded. This does not assert that none exist.</p>}</section>
       {examples.length>0&&<section class="relation-section"><h2>Examples</h2><ul>{examples.map(r=><li><a href={nodeUrl(r.source)}>{byId.get(r.source)!.title}</a> <code>{r.source}</code></li>)}</ul></section>}
       <section class="relation-section"><h2>Related objects</h2>{related.length?<ul>{related.map(r=><li><span class="relation-label">{r.label}</span><a href={nodeUrl(r.id)}>{byId.get(r.id)!.title}</a> <code>{r.id}</code></li>)}</ul>:<p class="muted">No additional relations recorded.</p>}</section>
       <section class="references"><h2>References & sources</h2><ol>{node.references.map(r=><li>{r.url?<a href={r.url}>{r.title} ↗</a>:r.title}{r.note&&<p>{r.note}</p>}</li>)}</ol>{node.authors.length>0&&<p>Authors: {node.authors.join(', ')}</p>}{node.date&&<p><time datetime={node.date}>{node.date}</time> · {node.dateNote}</p>}</section>
-    </div><aside class="math-aside"><section class="provenance"><p class="eyebrow">Epistemic record</p><StatusBadge status={node.status} /><dl><dt>Provenance</dt><dd>{node.provenance.replaceAll('-',' ')}</dd><dt>Verification method</dt><dd>{node.verification.method}</dd></dl><p>{node.verification.note}</p><p class="small">“In progress” describes this atlas entry; it does not imply a standard background definition is conjectural.</p></section><section class="local-network"><h2>Local neighborhood</h2><LocalGraph nodes={nodes} id={node.id} /><a class="text-link" href={url(`graph/?node=${node.id}`)}>Locate in the full graph ↗</a></section><section class="history"><p class="eyebrow">A stable object, an evolving record</p><p>This identifier stays with the mathematics as its exposition changes.</p>{sourceFile&&<a href={`https://github.com/alequisGS/math-overlod/commits/main/src/content/${sourceFile}`}>View this object’s Git history ↗</a>}</section></aside></div>
+    </div><aside class="math-aside"><section class="provenance"><p class="eyebrow">Epistemic record</p><StatusBadge status={node.claimStatus} /><dl><dt>Provenance</dt><dd>{node.provenance.replaceAll('-',' ')}</dd><dt>Verification method</dt><dd>{node.verification.method}</dd></dl><p>{node.verification.note}</p><p class="small">“In progress” describes this atlas entry; it does not imply a standard background definition is conjectural.</p></section><section class="local-network"><h2>Local neighborhood</h2><LocalGraph nodes={nodes} id={node.id} /><a class="text-link" href={url(`graph/?node=${node.id}`)}>Locate in the full graph ↗</a></section><section class="history"><p class="eyebrow">A stable object, an evolving record</p><p>This identifier stays with the mathematics as its exposition changes.</p>{sourceFile&&<a href={`https://github.com/alequisGS/math-overlod/commits/main/src/content/${sourceFile}`}>View this object’s Git history ↗</a>}</section></aside></div>
   </article>
 </BaseLayout>

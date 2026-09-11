@@ -3,10 +3,11 @@ id: "CATGEN-MIR-001"
 title: "A mirror interpretation of categorical genus"
 shortTitle: "Mirror interpretation?"
 type: "open-problem"
-status: "open"
+claimStatus: "open"
+publicationStatus: "unpublished"
 summary: "Ask whether the proposed numerical categorical data have a meaningful mirror counterpart."
 authors: []
-project: "CATGEN"
+projects: ["CATGEN"]
 tags: ["categorical invariants","derived categories"]
 references: [{"title":"Research outline supplied by Alex Gomez","note":"Beta seed content; editorial descriptions are not an independent proof review."}]
 dependsOn: []

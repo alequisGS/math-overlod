@@ -3,10 +3,11 @@ id: "HMS-LG-001"
 title: "Landau–Ginzburg models"
 shortTitle: "Landau–Ginzburg models"
 type: "concept"
-status: "in-progress"
+claimStatus: "in-progress"
+publicationStatus: "unpublished"
 summary: "A space equipped with a potential, serving as a possible mirror in suitable settings."
 authors: []
-project: "HMS"
+projects: ["HMS"]
 tags: ["mirror symmetry","arithmetic geometry"]
 references: [{"title":"Research outline supplied by Alex Gomez","note":"Beta seed content; editorial descriptions are not an independent proof review."}]
 dependsOn: []

@@ -3,10 +3,11 @@ id: "CATGEN-NUM-001"
 title: "Numerical Grothendieck group"
 shortTitle: "Numerical K-group"
 type: "concept"
-status: "in-progress"
+claimStatus: "in-progress"
+publicationStatus: "unpublished"
 summary: "A quotient of the Grothendieck group that removes classes invisible to Euler pairings."
 authors: []
-project: "CATGEN"
+projects: ["CATGEN"]
 tags: ["categorical invariants","derived categories"]
 references: [{"title":"Research outline supplied by Alex Gomez","note":"Beta seed content; editorial descriptions are not an independent proof review."}]
 dependsOn: ["CATGEN-EUL-001"]

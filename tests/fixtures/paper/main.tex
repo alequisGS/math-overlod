@@ -1,0 +1,17 @@
+\documentclass{article}
+\newcommand{\Xten}{X_{10}}
+\newcommand{\mystery}[1]{\unknown{#1}}
+\newtheorem{theorem}{Theorem}[section]
+\newaliascnt{lem}{theorem}
+\newtheorem{lem}[lem]{Lemma}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem*{question}{Question}
+\title{A fixture for $\Xten$}
+\author{First Author \and Second Author}
+\begin{document}
+\begin{abstract}Exact source and \mystery{unknown macros}.\end{abstract}
+\section{Geometry}\label{sec:geometry}
+\input{parts/results}
+\include{parts/definitions.tex}
+\addbibresource{refs.bib}
+\end{document}

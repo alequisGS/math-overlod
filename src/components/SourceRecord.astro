@@ -1,0 +1,20 @@
+---
+import type { CuratedNode } from '../lib/node-schema';
+import { sourceLinks } from '../lib/source-links';
+import { safeExternalUrl } from '../lib/latex-preview';
+import LatexSource from './LatexSource.astro';
+interface Props {source:CuratedNode['sources'][number]}
+const {source}=Astro.props;const links=sourceLinks(source);
+---
+<section class="accepted-source">
+  <h3>{source.environment} {source.printedNumber} · {source.label??source.sourceKey}</h3>
+  <p class="source-notice">Source-claimed statement. Accepting a source records attribution; it does not independently verify the mathematics. Numbering is a structural estimate.</p>
+  <p><code>{source.repository}/{source.path}</code> · lines {source.startLine}–{source.endLine}</p>
+  <p>Commit <code>{source.commit}</code> · retrieved {source.retrievedAt} · accepted {source.acceptedAt}</p>
+  <p class="source-links"><a href={links.pinned}>Imported version ↗</a><a href={links.current}>Current source ↗</a><a href={links.history}>Source history ↗</a></p>
+  {source.section&&<p>Section: {source.section}</p>}
+  {source.paperMetadata&&<><h4>Working paper metadata</h4><p>{source.paperMetadata.title}</p><p>{source.paperMetadata.authors.join(', ')}</p></>}
+  <LatexSource text={source.statementLatex} macros={source.macros} />
+  {source.proofLatex&&<details><summary>Proof source</summary><LatexSource text={source.proofLatex} macros={source.macros}/></details>}
+  {source.citations.length>0&&<><h4>Cited references</h4><ul>{source.citations.map(c=><li><code>{c.key}</code> · {c.authors.join(', ')} · {safeExternalUrl(c.url)?<a href={safeExternalUrl(c.url)}>{c.title}</a>:c.title} · {c.year}{c.doi&&<> · DOI {c.doi}</>}{c.eprint&&<> · eprint {c.eprint}</>}</li>)}</ul></>}
+</section>

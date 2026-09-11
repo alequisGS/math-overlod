@@ -3,10 +3,11 @@ id: "CATGEN-FANO-001"
 title: "Fano stacks as a testing ground"
 shortTitle: "Fano stacks"
 type: "concept"
-status: "in-progress"
+claimStatus: "in-progress"
+publicationStatus: "unpublished"
 summary: "A broader setting for categorical questions suggested by log del Pezzo examples."
 authors: []
-project: "CATGEN"
+projects: ["CATGEN"]
 tags: ["categorical invariants","derived categories"]
 references: [{"title":"Research outline supplied by Alex Gomez","note":"Beta seed content; editorial descriptions are not an independent proof review."}]
 dependsOn: []

@@ -1,6 +1,7 @@
 ---
-import { statusLabels, statusSymbols, type statuses } from '../lib/model';
-interface Props { status: typeof statuses[number] }
-const { status } = Astro.props;
+import { statusLabels, statusSymbols, publicationLabels, type statuses, type publicationStatuses } from '../lib/model';
+interface Props { status: typeof statuses[number]; publication?: typeof publicationStatuses[number] }
+const { status, publication } = Astro.props;
 ---
 <span class:list={['status', `status-${status}`]}><span aria-hidden="true">{statusSymbols[status]}</span> {statusLabels[status]}</span>
+{publication&&<span class="status publication-status">{publicationLabels[publication]}</span>}

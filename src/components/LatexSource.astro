@@ -1,0 +1,7 @@
+---
+import { latexPreview } from '../lib/latex-preview';
+interface Props {text:string;macros?:Record<string,string>;label?:string}
+const {text,macros={},label='Original LaTeX'}=Astro.props;
+---
+<div class="latex-preview" set:html={latexPreview(text,macros)} />
+<details class="raw-source"><summary>{label}</summary><pre><code>{text}</code></pre></details>

@@ -3,10 +3,11 @@ id: "HMS-PER-001"
 title: "Periods"
 shortTitle: "Periods"
 type: "concept"
-status: "in-progress"
+claimStatus: "in-progress"
+publicationStatus: "unpublished"
 summary: "Integrals of differential forms over cycles that vary with geometric parameters."
 authors: []
-project: "HMS"
+projects: ["HMS"]
 tags: ["mirror symmetry","arithmetic geometry"]
 references: [{"title":"Research outline supplied by Alex Gomez","note":"Beta seed content; editorial descriptions are not an independent proof review."}]
 dependsOn: []

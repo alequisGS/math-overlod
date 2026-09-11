@@ -3,10 +3,11 @@ id: "HMS-GAM-001"
 title: "Dubrovin and Gamma phenomena"
 shortTitle: "Dubrovin / Gamma"
 type: "concept"
-status: "in-progress"
+claimStatus: "in-progress"
+publicationStatus: "unpublished"
 summary: "A direction linking quantum connections and characteristic-class data to categorical structure."
 authors: []
-project: "HMS"
+projects: ["HMS"]
 tags: ["mirror symmetry","arithmetic geometry"]
 references: [{"title":"Research outline supplied by Alex Gomez","note":"Beta seed content; editorial descriptions are not an independent proof review."}]
 dependsOn: []

@@ -54,6 +54,7 @@ for (const route of [
   "graph/index.html",
   "index/index.html",
   "timeline/index.html",
+  "imports/index.html",
   "404.html",
 ])
   if (!files.includes(path.join(root, route)))

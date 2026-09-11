@@ -1,5 +1,6 @@
 ---
 import type { GraphData } from '../lib/graph';
+import { projects } from '../lib/model';
 import GraphControls from './GraphControls.astro';
 import NodePanel from './NodePanel.astro';
 interface Props { data: GraphData; compact?: boolean; selected?: string; label?: string }
@@ -10,7 +11,7 @@ const { data, compact = false, selected, label = 'Mathematical research network'
   {!compact && <GraphControls />}
   <div class="graph-workspace">
     <div class="graph-canvas" data-canvas role="img" aria-label={label}></div>
-    {!compact && <><div class="cluster-key"><span>01 / Log del Pezzo</span><span>02 / Categorical genus</span><span>03 / Mirrors & periods</span></div><NodePanel /></>}
+    {!compact && <><div class="cluster-key">{Object.values(projects).map((p,i)=><span>{String(i+1).padStart(2,"0")} / {p.short}</span>)}</div><NodePanel /></>}
     <div class="graph-navigation" aria-label="Graph navigation">
       <button data-zoom-in aria-label="Zoom in">+</button><button data-zoom-out aria-label="Zoom out">−</button><button data-fit>Fit</button>
       {!compact && <label class="label-toggle"><input data-labels type="checkbox" checked /> Labels</label>}
