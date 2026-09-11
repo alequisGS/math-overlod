@@ -384,12 +384,6 @@
     max-width: 310px;
     margin-bottom: 24px;
   }
-  .program-CATGEN .program-title {
-    padding-left: 50px;
-  }
-  .program-HMS .program-title {
-    padding-left: 10px;
-  }
   .network-intro {
     border-top: 1px solid var(--line);
     display: grid;
@@ -1159,9 +1153,6 @@
     .program-description {
       padding-left: 0;
     }
-    .program-CATGEN .program-title {
-      padding-left: 20px;
-    }
     .network-intro {
       gap: 30px;
     }
@@ -1303,10 +1294,6 @@
       max-width: 100%;
       font-size: 0.88rem;
       margin-bottom: 15px;
-    }
-    .program-CATGEN .program-title,
-    .program-HMS .program-title {
-      padding-left: 0;
     }
     .network-intro {
       grid-template-columns: 1fr;
