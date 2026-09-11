@@ -34,4 +34,4 @@ This claim records the memberwise resolution presentation. It does not assert th
 
 ## About
 
-This claim concerns the existing mathematical records `X10-RES-001` and `X10-BLOW-001`. The source fragment and reviewed attestation will be attached separately.
+This claim concerns the existing mathematical records `X10-RES-001` and `X10-BLOW-001`. The reviewed source attestation and documentary fragment are listed below the statement.

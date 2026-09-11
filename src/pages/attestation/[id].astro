@@ -1,0 +1,38 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getAtlas, nodeUrl, url } from '../../lib/graph';
+import { attestationReviewState, sourceAttestations, sourceFragments } from '../../lib/provenance';
+
+export function getStaticPaths() {
+  return sourceAttestations.map(attestation => ({ params: { id: attestation.id }, props: { attestation } }));
+}
+const { attestation } = Astro.props;
+const fragment = sourceFragments.find(candidate => candidate.id === attestation.fragment)!;
+const nodes = (await getAtlas()).map(entry => entry.data);
+const target = nodes.find(node => node.id === attestation.target)!;
+const state = attestationReviewState(attestation, fragment);
+---
+<BaseLayout title={`Attestation ${attestation.id}`} description="Reviewed source attestation">
+  <article class="source-fragment-page page-width">
+    <p class="breadcrumbs"><a href={url('index/')}>Index</a> / Attestation</p>
+    <header class="document-intro">
+      <p class="eyebrow">Reviewed documentary mapping</p>
+      <h1>Source attestation</h1>
+      <p class="lede"><code>{attestation.id}</code></p>
+    </header>
+    <section class="source-fragment-card">
+      <dl class="source-metadata">
+        <dt>Fragment</dt><dd><a href={url(`source/${fragment.id}/`)}><code>{fragment.id}</code></a></dd>
+        <dt>Relation</dt><dd><code>{attestation.relation}</code></dd>
+        <dt>Claim</dt><dd><a href={nodeUrl(target.id)}>{target.title}</a> · <code>{target.id}</code></dd>
+        <dt>Coverage</dt><dd>{attestation.coverage}</dd>
+        <dt>Review state</dt><dd><span class="review-state">{state}</span></dd>
+        <dt>Method</dt><dd>{attestation.review.method}</dd>
+        <dt>Source commit</dt><dd><code>{attestation.review.sourceCommit}</code></dd>
+      </dl>
+      <p>{attestation.review.note}</p>
+      <p>This accepted mapping records that the reviewed fragment expresses or supports the claim. It is not a formal proof or independent verification.</p>
+      <p><a class="text-link" href={url(`source/${fragment.id}/`)}>Inspect source fragment ↗</a></p>
+    </section>
+  </article>
+</BaseLayout>

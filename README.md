@@ -133,6 +133,8 @@ The build rejects duplicate mathematical IDs, missing targets, self relations an
 
 Claim records may use `about: [NODE-ID, ...]` to identify the mathematical objects they assert something about. This is displayed as an attribute of the claim and remains separate from semantic graph relations and source attestations.
 
+The provenance pilot keeps documentary evidence outside the mathematical node collection. A source fragment records a commit-pinned selection from one imported environment; a source attestation records a reviewed `asserts` mapping from that fragment to a claim. Fragments and attestations are independent records, so one theorem environment and one claim can participate in many mappings. The pilot fragment is inspectable at `/source/FRAG-X10-MAIN-RES/` and its attestation at `/attestation/ATT-X10-MAIN-RES-001/`.
+
 ## Provenance and the beta dataset
 
 `provenance` distinguishes `source-backed`, `background` and `research-direction` entries. Every record requires `verification.method` (`human`, `human-source`, `computational`, `formal` or `mixed`) and an explanatory note. The method describes the attributed evidence, not an automatic certificate provided by this website.

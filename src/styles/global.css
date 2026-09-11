@@ -1695,6 +1695,32 @@
     padding-block: 1.2rem;
     font-size: 0.9rem;
   }
+  .source-fragment-page {
+    max-width: 960px;
+    padding-bottom: 6rem;
+  }
+  .source-fragment-card,
+  .source-attestation {
+    border-top: 1px solid #d7dee5;
+    padding-block: 1.5rem;
+  }
+  .source-fragment-card pre {
+    overflow: auto;
+    max-height: 42rem;
+    background: #eef1f4;
+    padding: 1.2rem;
+    font-size: 0.82rem;
+    line-height: 1.65;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .source-fragment-card code,
+  .source-attestation code {
+    overflow-wrap: anywhere;
+  }
+  .source-attestations {
+    margin-top: 2rem;
+  }
   .accepted-source code {
     overflow-wrap: anywhere;
   }
