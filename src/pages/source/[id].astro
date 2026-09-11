@@ -1,7 +1,8 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getAtlas, nodeUrl, url } from '../../lib/graph';
-import { inspectSourceFragment, sourceAttestations, sourceFragments } from '../../lib/provenance';
+import { inspectSourceFragment } from '../../lib/provenance';
+import { sourceAttestations, sourceFragments, sourceSnapshotFor } from '../../lib/provenance-pilot';
 import { sourceLinks } from '../../lib/source-links';
 
 export function getStaticPaths() {
@@ -11,14 +12,17 @@ const { fragment } = Astro.props;
 const nodes = (await getAtlas()).map(entry => entry.data);
 const byId = new Map(nodes.map(node => [node.id, node]));
 const attestations = sourceAttestations.filter(attestation => attestation.fragment === fragment.id);
-const freshness = inspectSourceFragment(fragment);
+const freshness = inspectSourceFragment(fragment, sourceSnapshotFor(fragment));
+const assertionFile = fragment.assertionSelections[0].file;
+const assertionStartLine = fragment.assertionSelections[0].startLine;
+const assertionEndLine = fragment.assertionSelections[fragment.assertionSelections.length - 1].endLine;
 const links = sourceLinks({
   repository: fragment.source.repository,
   branch: fragment.source.branch,
   commit: fragment.source.commit,
-  path: fragment.source.file,
-  startLine: fragment.selection.startLine,
-  endLine: fragment.selection.endLine,
+  path: assertionFile,
+  startLine: assertionStartLine,
+  endLine: assertionEndLine,
 });
 ---
 <BaseLayout title={`Source fragment ${fragment.id}`} description="Documentary source fragment">
@@ -37,14 +41,16 @@ const links = sourceLinks({
         <dt>Commit</dt><dd><code>{fragment.source.commit}</code></dd>
         <dt>File</dt><dd><code>{fragment.source.file}</code></dd>
         <dt>Container</dt><dd>{fragment.container.environment} {fragment.container.printedNumber} · <code>{fragment.container.latexLabel}</code></dd>
-        <dt>Lines</dt><dd>{fragment.selection.startLine}–{fragment.selection.endLine}</dd>
+        <dt>Assertion lines</dt><dd>{assertionStartLine}–{assertionEndLine}</dd>
       </dl>
-      <p class="review-state">Snapshot {freshness.state}</p>
+      <h2>Source state</h2>
+      <p class="review-state">{freshness.state==='current'?'current':freshness.state==='locator-changed'?'Source moved / renumbered · mathematical content unchanged':freshness.state==='assertion-changed'?'Assertion changed · human review required':freshness.state==='context-changed'?'Context changed · human review required':'Source missing · human review required'}</p>
       {freshness.reasons.length>0&&<ul class="source-notice">{freshness.reasons.map(reason=><li>{reason}</li>)}</ul>}
-      <h2>Selected source text</h2>
-      <pre><code>{fragment.selection.selectedText}</code></pre>
+      <h2>Assertion</h2>
+      {fragment.assertionSelections.map(selection=><pre><code>{selection.selectedText}</code></pre>)}
       <h2>Context / inherited hypotheses</h2>
       <p>{fragment.context.statementScope}</p>
+      {fragment.contextSelections.map(selection=><pre><code>{selection.selectedText}</code></pre>)}
       <p>Source key: <code>{fragment.context.sourceKey}</code> · section: {fragment.context.section}</p>
       <p class="source-links"><a href={links.pinned}>Pinned GitHub source ↗</a><a href={links.current}>Current source ↗</a><a href={links.history}>Source history ↗</a></p>
     </section>

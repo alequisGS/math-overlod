@@ -1,7 +1,8 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getAtlas, nodeUrl, url } from '../../lib/graph';
-import { attestationReviewState, sourceAttestations, sourceFragments } from '../../lib/provenance';
+import { evaluateAttestation } from '../../lib/provenance';
+import { sourceAttestations, sourceFragments, sourceSnapshotFor } from '../../lib/provenance-pilot';
 
 export function getStaticPaths() {
   return sourceAttestations.map(attestation => ({ params: { id: attestation.id }, props: { attestation } }));
@@ -10,7 +11,7 @@ const { attestation } = Astro.props;
 const fragment = sourceFragments.find(candidate => candidate.id === attestation.fragment)!;
 const nodes = (await getAtlas()).map(entry => entry.data);
 const target = nodes.find(node => node.id === attestation.target)!;
-const state = attestationReviewState(attestation, fragment);
+const status = evaluateAttestation(attestation, fragment, sourceSnapshotFor(fragment));
 ---
 <BaseLayout title={`Attestation ${attestation.id}`} description="Reviewed source attestation">
   <article class="source-fragment-page page-width">
@@ -26,7 +27,10 @@ const state = attestationReviewState(attestation, fragment);
         <dt>Relation</dt><dd><code>{attestation.relation}</code></dd>
         <dt>Claim</dt><dd><a href={nodeUrl(target.id)}>{target.title}</a> · <code>{target.id}</code></dd>
         <dt>Coverage</dt><dd>{attestation.coverage}</dd>
-        <dt>Review state</dt><dd><span class="review-state">{state}</span></dd>
+        <dt>Semantic review</dt><dd><span class="review-state">{status.semanticReview}</span></dd>
+        <dt>Source locator state</dt><dd><span class="review-state">{status.freshness.locatorState==='changed'?'moved / renumbered':'current'}</span></dd>
+        <dt>Assertion state</dt><dd><span class="review-state">{status.freshness.assertionState}</span></dd>
+        <dt>Context state</dt><dd><span class="review-state">{status.freshness.contextState}</span></dd>
         <dt>Method</dt><dd>{attestation.review.method}</dd>
         <dt>Source commit</dt><dd><code>{attestation.review.sourceCommit}</code></dd>
       </dl>

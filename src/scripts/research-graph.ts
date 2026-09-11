@@ -112,6 +112,17 @@ const styles: StylesheetJson = [
     selector: 'edge[type = "motivates"]',
     style: { "line-style": "dashed", "line-color": "#778c9c" },
   },
+  {
+    selector: 'edge[kind = "structural"]',
+    style: {
+      "line-style": "dotted",
+      "line-color": "#9aa8b7",
+      "target-arrow-color": "#9aa8b7",
+      "target-arrow-shape": "none",
+      width: 1,
+      opacity: 0.55,
+    },
+  },
   { selector: ".faded", style: { opacity: 0.12 } },
   {
     selector: "node.focus",

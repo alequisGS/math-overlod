@@ -1,39 +1,35 @@
-import { z } from "astro/zod";
 import { createHash } from "node:crypto";
-import importedPaper from "../../imports/2606.18238/paper.json" with {
-  type: "json",
-};
-import {
-  rawSourceAttestations,
-  rawSourceFragments,
-} from "../content/provenance.ts";
+import { z } from "astro/zod";
 import { identifier } from "./node-schema.ts";
 
 const commit = z.string().regex(/^[a-f0-9]{40}$/);
-
-const sourceReferenceSchema = z.object({
-  repository: z.string().regex(/^[\w.-]+\/[\w.-]+$/),
-  branch: z.string().min(1),
-  commit,
+const selectionSchema = z.object({
   file: z.string().min(1),
-  paperDirectory: z.string().min(1),
+  startLine: z.number().int().positive(),
+  endLine: z.number().int().positive(),
+  selectedText: z.string().min(1),
+  contentHash: z.string().regex(/^[a-f0-9]{64}$/),
 });
 
 export const sourceFragmentSchema = z.object({
   id: z.string().regex(/^FRAG-[A-Z0-9-]+$/),
   kind: z.literal("source-fragment"),
-  source: sourceReferenceSchema,
+  source: z.object({
+    repository: z.string().regex(/^[\w.-]+\/[\w.-]+$/),
+    branch: z.string().min(1),
+    commit,
+    file: z.string().min(1),
+    paperDirectory: z.string().min(1),
+  }),
   container: z.object({
     latexLabel: z.string().min(1),
     environment: z.string().min(1),
     printedNumber: z.string().optional(),
   }),
-  selection: z.object({
-    startLine: z.number().int().positive(),
-    endLine: z.number().int().positive(),
-    selectedText: z.string().min(1),
-    contentHash: z.string().regex(/^[a-f0-9]{64}$/),
-  }),
+  assertionSelections: z.array(selectionSchema).min(1),
+  contextSelections: z
+    .array(selectionSchema.extend({ role: z.string().min(1) }))
+    .default([]),
   context: z.object({
     sourceKey: z.string().min(1),
     title: z.string().min(1),
@@ -60,16 +56,16 @@ export const sourceAttestationSchema = z.object({
 
 export type SourceFragment = z.infer<typeof sourceFragmentSchema>;
 export type SourceAttestation = z.infer<typeof sourceAttestationSchema>;
-export type ProvenanceReviewState = "current" | "needs-review";
+export type SourceSelection = z.infer<typeof selectionSchema>;
+export type SemanticReviewState = "accepted" | "needs-review" | "rejected";
+export type ProvenanceChange =
+  | "current"
+  | "locator-changed"
+  | "assertion-changed"
+  | "context-changed"
+  | "source-missing";
 
-export const sourceFragments = rawSourceFragments.map((fragment) =>
-  sourceFragmentSchema.parse(fragment),
-);
-export const sourceAttestations = rawSourceAttestations.map((attestation) =>
-  sourceAttestationSchema.parse(attestation),
-);
-
-type ImportedObject = {
+export interface ImportedEnvironmentObject {
   sourceKey: string;
   environment: string;
   latexLabel?: string;
@@ -77,12 +73,11 @@ type ImportedObject = {
   title?: string;
   sourceFile: string;
   startLine: number;
-  endLine: number;
   statement: string;
-  contentHash: string;
   section?: string;
-};
-type ImportedPaper = {
+}
+
+export interface ImportedPaperLike {
   metadata?: { title?: string };
   source: {
     repository: string;
@@ -90,112 +85,208 @@ type ImportedPaper = {
     commit: string;
     paperDirectory: string;
   };
-  objects: ImportedObject[];
-};
+  objects: readonly ImportedEnvironmentObject[];
+}
+
+interface ResolvedSelection {
+  file?: string;
+  startLine?: number;
+  endLine?: number;
+  selectedText?: string;
+  contentHash?: string;
+  matched: boolean;
+}
 
 export interface ImportedEnvironmentSnapshot {
   source: SourceFragment["source"];
   container: SourceFragment["container"];
-  selection: Pick<SourceFragment["selection"], "startLine" | "endLine" | "selectedText" | "contentHash">;
+  assertionSelections: ResolvedSelection[];
+  contextSelections: ResolvedSelection[];
   context: Pick<SourceFragment["context"], "sourceKey" | "title" | "paperTitle" | "section">;
 }
 
-const paper = importedPaper as ImportedPaper;
-const pilotObject = paper.objects.find(
-  (object) => object.latexLabel === "thm:X10-main",
-);
-if (!pilotObject) throw new Error("Imported theorem thm:X10-main is missing.");
-
-const pilotSelection = pilotObject.statement.split("\\begin{enumerate}")[0];
 const hashText = (text: string) =>
   createHash("sha256").update(text, "utf8").digest("hex");
-export const pilotSourceSnapshot: ImportedEnvironmentSnapshot = {
-  source: {
-    repository: paper.source.repository,
-    branch: paper.source.branch,
-    commit: paper.source.commit,
-    file: pilotObject.sourceFile,
-    paperDirectory: paper.source.paperDirectory,
-  },
-  container: {
-    latexLabel: pilotObject.latexLabel!,
-    environment: pilotObject.environment,
-    printedNumber: pilotObject.printedNumber,
-  },
-  selection: {
-    startLine: pilotObject.startLine,
-    endLine:
-      pilotSelection.split("\n").length +
-      pilotObject.startLine -
-      (pilotSelection.endsWith("\n") ? 2 : 1),
-    selectedText: pilotSelection,
-    contentHash: hashText(pilotSelection),
-  },
-  context: {
-    sourceKey: pilotObject.sourceKey,
-    title: pilotObject.title ?? pilotObject.latexLabel!,
-    paperTitle: paper.metadata?.title,
-    section: pilotObject.section,
-  },
-};
+
+function selectionLines(statement: string, start: number, text: string) {
+  const before = statement.slice(0, start);
+  const startLineOffset = before ? before.split("\n").length - 1 : 0;
+  const lineCount = text.split("\n").length - (text.endsWith("\n") ? 1 : 0);
+  return { startLineOffset, lineCount: Math.max(lineCount, 1) };
+}
+
+function resolveSelection(
+  object: ImportedEnvironmentObject,
+  selection: SourceSelection,
+): ResolvedSelection {
+  const start = object.statement.indexOf(selection.selectedText);
+  if (start < 0) return { matched: false };
+  const { startLineOffset, lineCount } = selectionLines(
+    object.statement,
+    start,
+    selection.selectedText,
+  );
+  return {
+    file: object.sourceFile,
+    startLine: object.startLine + startLineOffset,
+    endLine: object.startLine + startLineOffset + lineCount - 1,
+    selectedText: selection.selectedText,
+    contentHash: hashText(selection.selectedText),
+    matched: true,
+  };
+}
+
+export function buildImportedEnvironmentSnapshot(
+  importedPaper: ImportedPaperLike,
+  sourceKey: string,
+  selectionConfig: Pick<SourceFragment, "assertionSelections" | "contextSelections">,
+): ImportedEnvironmentSnapshot | null {
+  const object = importedPaper.objects.find(
+    (candidate) => candidate.sourceKey === sourceKey || candidate.latexLabel === sourceKey,
+  );
+  if (!object) return null;
+  return {
+    source: {
+      repository: importedPaper.source.repository,
+      branch: importedPaper.source.branch,
+      commit: importedPaper.source.commit,
+      file: object.sourceFile,
+      paperDirectory: importedPaper.source.paperDirectory,
+    },
+    container: {
+      latexLabel: object.latexLabel ?? sourceKey,
+      environment: object.environment,
+      printedNumber: object.printedNumber,
+    },
+    assertionSelections: selectionConfig.assertionSelections.map((selection) =>
+      resolveSelection(object, selection),
+    ),
+    contextSelections: selectionConfig.contextSelections.map((selection) =>
+      resolveSelection(object, selection),
+    ),
+    context: {
+      sourceKey: object.sourceKey,
+      title: object.title ?? object.latexLabel ?? sourceKey,
+      paperTitle: importedPaper.metadata?.title,
+      section: object.section,
+    },
+  };
+}
+
+export interface SourceFreshness {
+  state: ProvenanceChange;
+  locatorState: "current" | "changed";
+  assertionState: "current" | "changed";
+  contextState: "current" | "changed";
+  reasons: string[];
+}
+
+function selectionChanged(
+  pinned: SourceSelection,
+  current: ResolvedSelection | undefined,
+) {
+  return (
+    !current?.matched ||
+    current.selectedText !== pinned.selectedText ||
+    current.contentHash !== pinned.contentHash
+  );
+}
+
+function selectionLocatorChanged(
+  pinned: SourceSelection,
+  current: ResolvedSelection | undefined,
+) {
+  return (
+    current?.matched === true &&
+    (current.file !== pinned.file ||
+      current.startLine !== pinned.startLine ||
+      current.endLine !== pinned.endLine)
+  );
+}
 
 export function inspectSourceFragment(
   fragment: SourceFragment,
-  snapshot: ImportedEnvironmentSnapshot = pilotSourceSnapshot,
-) {
+  snapshot: ImportedEnvironmentSnapshot | null,
+): SourceFreshness {
+  if (!snapshot) {
+    return {
+      state: "source-missing",
+      locatorState: "changed",
+      assertionState: "changed",
+      contextState: fragment.contextSelections.length ? "changed" : "current",
+      reasons: ["source environment is missing from the imported paper"],
+    };
+  }
   const reasons: string[] = [];
-  if (fragment.source.commit !== snapshot.source.commit)
-    reasons.push("source commit changed");
-  if (
+  const locatorChanged =
     fragment.source.repository !== snapshot.source.repository ||
     fragment.source.branch !== snapshot.source.branch ||
+    fragment.source.commit !== snapshot.source.commit ||
     fragment.source.file !== snapshot.source.file ||
-    fragment.source.paperDirectory !== snapshot.source.paperDirectory
-  )
-    reasons.push("source location changed");
-  if (
+    fragment.source.paperDirectory !== snapshot.source.paperDirectory ||
     fragment.container.latexLabel !== snapshot.container.latexLabel ||
     fragment.container.environment !== snapshot.container.environment ||
-    fragment.container.printedNumber !== snapshot.container.printedNumber
-  )
-    reasons.push("source environment metadata changed");
-  if (
-    fragment.selection.startLine !== snapshot.selection.startLine ||
-    fragment.selection.endLine !== snapshot.selection.endLine ||
-    fragment.selection.selectedText !== snapshot.selection.selectedText ||
-    fragment.selection.contentHash !== snapshot.selection.contentHash
-  )
-    reasons.push("selected source text or line range changed");
-  if (
+    fragment.container.printedNumber !== snapshot.container.printedNumber ||
     fragment.context.sourceKey !== snapshot.context.sourceKey ||
     fragment.context.title !== snapshot.context.title ||
     fragment.context.paperTitle !== snapshot.context.paperTitle ||
-    fragment.context.section !== snapshot.context.section
-  )
-    reasons.push("recorded source context changed");
+    fragment.context.section !== snapshot.context.section ||
+    fragment.assertionSelections.some((selection, index) =>
+      selectionLocatorChanged(selection, snapshot.assertionSelections[index]),
+    ) ||
+    fragment.contextSelections.some((selection, index) =>
+      selectionLocatorChanged(selection, snapshot.contextSelections[index]),
+    );
+  const assertionChanged = fragment.assertionSelections.some((selection, index) =>
+    selectionChanged(selection, snapshot.assertionSelections[index]),
+  );
+  const contextChanged = fragment.contextSelections.some((selection, index) =>
+    selectionChanged(selection, snapshot.contextSelections[index]),
+  );
+  if (locatorChanged) reasons.push("source locator or presentation metadata changed");
+  if (assertionChanged) reasons.push("assertion selection changed");
+  if (contextChanged) reasons.push("context selection changed");
   return {
-    state: reasons.length ? ("needs-review" as const) : ("current" as const),
+    state: assertionChanged
+      ? "assertion-changed"
+      : contextChanged
+        ? "context-changed"
+        : locatorChanged
+          ? "locator-changed"
+          : "current",
+    locatorState: locatorChanged ? "changed" : "current",
+    assertionState: assertionChanged ? "changed" : "current",
+    contextState: contextChanged ? "changed" : "current",
     reasons,
   };
 }
 
-export function attestationReviewState(
+export interface AttestationStatus {
+  semanticReview: SemanticReviewState;
+  freshness: SourceFreshness;
+}
+
+export function evaluateAttestation(
   attestation: SourceAttestation,
   fragment: SourceFragment,
-  snapshot: ImportedEnvironmentSnapshot = pilotSourceSnapshot,
-) {
-  if (attestation.review.state !== "accepted") return attestation.review.state;
-  if (attestation.review.sourceCommit !== fragment.source.commit)
-    return "needs-review" as const;
-  return inspectSourceFragment(fragment, snapshot).state === "needs-review"
-    ? ("needs-review" as const)
-    : ("accepted" as const);
+  snapshot: ImportedEnvironmentSnapshot | null,
+): AttestationStatus {
+  const freshness = inspectSourceFragment(fragment, snapshot);
+  const semanticReview =
+    attestation.review.state === "rejected"
+      ? "rejected"
+      : attestation.review.state === "accepted" &&
+          freshness.assertionState === "current" &&
+          freshness.contextState === "current"
+        ? "accepted"
+        : "needs-review";
+  return { semanticReview, freshness };
 }
 
 export function validateProvenance(
   nodes: readonly { id: string; type: string }[],
-  fragments: readonly SourceFragment[] = sourceFragments,
-  attestations: readonly SourceAttestation[] = sourceAttestations,
+  fragments: readonly SourceFragment[],
+  attestations: readonly SourceAttestation[],
 ) {
   const unique = (items: readonly { id: string }[], kind: string) => {
     const ids = new Set<string>();
@@ -206,9 +297,15 @@ export function validateProvenance(
   };
   unique(fragments, "source fragment");
   unique(attestations, "source attestation");
+  for (const fragment of fragments) {
+    sourceFragmentSchema.parse(fragment);
+    if (!fragment.assertionSelections.length)
+      throw new Error(`${fragment.id}: assertion selection is empty`);
+  }
   const fragmentIds = new Set(fragments.map((fragment) => fragment.id));
   const nodesById = new Map(nodes.map((node) => [node.id, node]));
   for (const attestation of attestations) {
+    sourceAttestationSchema.parse(attestation);
     if (!fragmentIds.has(attestation.fragment))
       throw new Error(
         `${attestation.id}: unknown source fragment ${attestation.fragment}`,

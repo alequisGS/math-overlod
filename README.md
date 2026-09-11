@@ -131,9 +131,11 @@ Supported relations: `uses`, `implies`, `generalizes`, `specializes`, `example-o
 
 The build rejects duplicate mathematical IDs, missing targets, self relations and dependency cycles. Reciprocal conceptual relationships are allowed. Every graph node and relationship comes from the collection, including local graphs.
 
-Claim records may use `about: [NODE-ID, ...]` to identify the mathematical objects they assert something about. This is displayed as an attribute of the claim and remains separate from semantic graph relations and source attestations.
+Claim records may use `about: [NODE-ID, ...]` to identify the mathematical objects they assert something about. This is displayed as an attribute of the claim and as a distinct structural graph edge; it remains separate from semantic graph relations and source attestations.
 
 The provenance pilot keeps documentary evidence outside the mathematical node collection. A source fragment records a commit-pinned selection from one imported environment; a source attestation records a reviewed `asserts` mapping from that fragment to a claim. Fragments and attestations are independent records, so one theorem environment and one claim can participate in many mappings. The pilot fragment is inspectable at `/source/FRAG-X10-MAIN-RES/` and its attestation at `/attestation/ATT-X10-MAIN-RES-001/`.
+
+Fragments separate `assertionSelections` from `contextSelections`. Locator changes such as theorem renumbering, section moves, line moves, or a new source commit preserve semantic acceptance when the selected assertion and context remain unchanged. Changes to either selection require human review.
 
 ## Provenance and the beta dataset
 

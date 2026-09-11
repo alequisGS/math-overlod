@@ -3,6 +3,8 @@ import { normalizedRelations, validateNetwork } from "./relations";
 import { validateProjectMembership } from "./ontology";
 import { projects } from "./model";
 import { validateProvenance } from "./provenance";
+import { sourceAttestations, sourceFragments } from "./provenance-pilot";
+import { aboutGraphEdges } from "./graph-data";
 export type MathNode = CollectionEntry<"nodes">["data"];
 export const url = (path = "") =>
   `${import.meta.env.BASE_URL.replace(/\/$/, "")}/${path.replace(/^\//, "")}`;
@@ -16,7 +18,7 @@ export async function getAtlas() {
     entries.map((e) => e.data),
     projects,
   );
-  validateProvenance(entries.map((e) => e.data));
+  validateProvenance(entries.map((e) => e.data), sourceFragments, sourceAttestations);
   for (const [key, project] of Object.entries(projects))
     if (!entries.some((e) => e.data.id === project.anchor))
       throw new Error(`Project ${key} has an unknown anchor ${project.anchor}`);
@@ -24,6 +26,19 @@ export async function getAtlas() {
 }
 export function graphData(nodes: MathNode[]) {
   const ids = new Set(nodes.map((n) => n.id));
+  const semanticEdges = nodes.flatMap((n) =>
+    normalizedRelations(n)
+      .filter((r) => ids.has(r.target))
+      .map((r) => ({
+        id: `${n.id}:${r.type}:${r.target}`,
+        source: n.id,
+        target: r.target,
+        type: r.type,
+        kind: "semantic" as const,
+        note: r.note,
+      })),
+  );
+  const aboutEdges = aboutGraphEdges(nodes, ids);
   return {
     nodes: nodes.map((n) => ({
       ...n,
@@ -31,17 +46,7 @@ export function graphData(nodes: MathNode[]) {
       href: nodeUrl(n.id),
       relations: normalizedRelations(n),
     })),
-    edges: nodes.flatMap((n) =>
-      normalizedRelations(n)
-        .filter((r) => ids.has(r.target))
-        .map((r) => ({
-          id: `${n.id}:${r.type}:${r.target}`,
-          source: n.id,
-          target: r.target,
-          type: r.type,
-          note: r.note,
-        })),
-    ),
+    edges: [...semanticEdges, ...aboutEdges],
   };
 }
 export type GraphData = ReturnType<typeof graphData>;

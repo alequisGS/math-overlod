@@ -14,20 +14,33 @@ export const rawSourceFragments = [
       environment: "theorem",
       printedNumber: "1.3",
     },
-    selection: {
-      startLine: 288,
-      endLine: 294,
-      selectedText: String.raw`\label{thm:X10-main}
-Let $X_{10}\subset\mathbb P(1,2,3,5)$ be a quasismooth hypersurface of
-degree $10$, with canonical stack $\mathcal X_{10}$ and minimal resolution
-$\nu\colon\widetilde X_{10}\to X_{10}$. Then $X_{10}$ has a unique singular
-point $p$, of type $\tfrac13(1,1)$, and $\widetilde X_{10}$ is the blow-up
+    assertionSelections: [
+      {
+        file: "ArXiv/2606.18238/main.tex",
+        startLine: 292,
+        endLine: 294,
+        selectedText: String.raw`$\widetilde X_{10}$ is the blow-up
 $\sigma\colon\widetilde X_{10}\to\mathbb F_3$ at eight distinct points off
 $C_0$, with pairwise disjoint exceptional curves $D_1,\dots,D_8$.
+`.trimEnd(),
+        contentHash:
+          "cf255b3858f6f9f342589e958be9f6cebe899d3369d35168710d28f190c83bb2",
+      },
+    ],
+    contextSelections: [
+      {
+        file: "ArXiv/2606.18238/main.tex",
+        startLine: 289,
+        endLine: 291,
+        selectedText: String.raw`Let $X_{10}\subset\mathbb P(1,2,3,5)$ be a quasismooth hypersurface of
+degree $10$, with canonical stack $\mathcal X_{10}$ and minimal resolution
+$\nu\colon\widetilde X_{10}\to X_{10}$.
 `,
-      contentHash:
-        "7bd18ac6445f5fbde8ccd9f968fda23b66937175caac875afe6b040955edc748",
-    },
+        contentHash:
+          "2449aa72de532439963377363bee7cbf3888a4446902137c0cdaf72350bcf8b3",
+        role: "shared-hypotheses",
+      },
+    ].map(selection => ({ ...selection, selectedText: selection.selectedText.trimEnd() })),
     context: {
       sourceKey: "label:thm:X10-main",
       title: "The hypersurface \\(X_{10}\\)",
@@ -35,7 +48,7 @@ $C_0$, with pairwise disjoint exceptional curves $D_1,\dots,D_8$.
         "Derived categories and Brauer groups of log del Pezzo surfaces with \\texorpdfstring{$\\frac13(1,1)$}{1/3(1,1)} singularities",
       section: "Introduction",
       statementScope:
-        "Opening paragraph of theorem 1.3; the subsequent enumerated categorical clauses are outside this fragment.",
+        "The context selection records quasismoothness, degree, ambient weighted projective space, and the minimal-resolution morphism. The theorem's singularity sentence and later categorical clauses are outside this fragment.",
     },
   },
 ] as const;
