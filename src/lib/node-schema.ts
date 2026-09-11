@@ -93,6 +93,7 @@ export const nodeSchema = z.preprocess(
     dateNote: z.string().optional(),
     authors: z.array(z.string()).default([]),
     projects: z.array(z.string().regex(/^[A-Z][A-Z0-9-]*$/)).min(1),
+    about: z.array(identifier).default([]),
     tags: z.array(z.string()).default([]),
     references: z
       .array(

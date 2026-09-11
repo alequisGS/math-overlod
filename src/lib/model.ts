@@ -13,6 +13,7 @@ export const nodeTypes = [
   "open-problem",
   "project",
   "paper",
+  "claim",
 ] as const;
 export const statuses = [
   "source-claimed",

@@ -117,7 +117,7 @@ Explain what resolving this question would clarify.
 
 For a theorem use `type: theorem`, an appropriate evidence-backed status, a precise **Statement**, and a proof or proof reference. For an example use `type: example` and, when appropriate, an `example-of` relation. Do not mark a result `proved`, `published` or `verified` merely because a file exists. Build before committing.
 
-Supported types: `concept`, `definition`, `theorem`, `lemma`, `proposition`, `corollary`, `example`, `construction`, `computation`, `conjecture`, `open-problem`, `project`, `paper`.
+Supported types: `concept`, `definition`, `theorem`, `lemma`, `proposition`, `corollary`, `example`, `construction`, `computation`, `conjecture`, `open-problem`, `project`, `paper`, `claim`.
 
 Supported claim statuses: `source-claimed`, `proved`, `verified`, `computational`, `conjectural`, `open`, `in-progress`, `abandoned`. Badges show status in text and a symbol, with distinct border/fill treatments. Graph shapes encode mathematical role; dashed outlines mark unfinished entries. The selected panel displays exact status and provenance. Status is never encoded only by color.
 
@@ -130,6 +130,8 @@ Relations are **outgoing from the record containing them**. For example, on `A-0
 Supported relations: `uses`, `implies`, `generalizes`, `specializes`, `example-of`, `motivates`, `depends-on`, `obstructs`, `related-to`, `appears-in`. An optional `note` can qualify a relation. `motivates` describes a research direction, **not a logical consequence**. `related-to` makes no stronger claim. Never turn an exploratory edge into `implies` without mathematical justification.
 
 The build rejects duplicate mathematical IDs, missing targets, self relations and dependency cycles. Reciprocal conceptual relationships are allowed. Every graph node and relationship comes from the collection, including local graphs.
+
+Claim records may use `about: [NODE-ID, ...]` to identify the mathematical objects they assert something about. This is displayed as an attribute of the claim and remains separate from semantic graph relations and source attestations.
 
 ## Provenance and the beta dataset
 
