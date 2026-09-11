@@ -3,7 +3,7 @@ id: "CATGEN-QUOT-001"
 title: "Quotient singularities"
 shortTitle: "Quotient singularities"
 type: "concept"
-claimStatus: "in-progress"
+editorialState: "reviewed"
 publicationStatus: "unpublished"
 summary: "Local quotient models connect singular spaces to smooth stack geometry."
 authors: []

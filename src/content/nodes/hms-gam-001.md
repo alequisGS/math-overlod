@@ -3,7 +3,7 @@ id: "HMS-GAM-001"
 title: "Dubrovin and Gamma phenomena"
 shortTitle: "Dubrovin / Gamma"
 type: "concept"
-claimStatus: "in-progress"
+editorialState: "draft"
 publicationStatus: "unpublished"
 summary: "A direction linking quantum connections and characteristic-class data to categorical structure."
 authors: []

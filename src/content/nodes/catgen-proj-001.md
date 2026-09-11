@@ -3,7 +3,7 @@ id: "CATGEN-PROJ-001"
 title: "The categorical genus generalization program"
 shortTitle: "Categorical genus program"
 type: "project"
-claimStatus: "in-progress"
+editorialState: "draft"
 publicationStatus: "unpublished"
 summary: "Develop definitions, examples and invariance questions beyond the initial Euler calculation."
 authors: []
@@ -23,4 +23,3 @@ The program has three mathematical tasks: specify the numerical data and convent
 ## Why it matters
 
 The project keeps prospective generalizations separate from the proved X₁₀ result that motivates them.
-

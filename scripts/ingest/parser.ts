@@ -281,7 +281,7 @@ export function parsePaper(
       proposedNodeType: proposedType(environment),
       suggestedId: "",
       contentHash: "",
-      claimStatus: "source-claimed",
+      claimStanding: "source-claimed",
       verification: {
         method: "human-source",
         note: `Extracted from a ${frame.name} environment in the author's source; not independently verified by Math Overlord.`,
@@ -597,7 +597,7 @@ export function parsePaper(
         citations.map((c) => [c.key, c.fields]),
       ]),
     ),
-    claimStatus: "source-claimed",
+    claimStanding: "source-claimed",
     verification: {
       method: "human-source",
       note: "Paper metadata extracted from the working TeX; publication and proof status were not independently verified.",

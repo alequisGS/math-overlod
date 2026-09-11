@@ -3,7 +3,7 @@ id: "X10-STACK-001"
 title: "The canonical stack of X₁₀"
 shortTitle: "Canonical stack"
 type: "construction"
-claimStatus: "in-progress"
+editorialState: "curated"
 publicationStatus: "preprint"
 summary: "The stack associated with the quotient-singular surface retains its local stabilizer data."
 authors: []

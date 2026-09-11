@@ -1,7 +1,20 @@
 ---
-import { statusLabels, statusSymbols, publicationLabels, type statuses, type publicationStatuses } from '../lib/model';
-interface Props { status: typeof statuses[number]; publication?: typeof publicationStatuses[number] }
-const { status, publication } = Astro.props;
+import {
+  claimStandingLabels,
+  claimStandingSymbols,
+  editorialStateLabels,
+  publicationLabels,
+  type claimStandings,
+  type editorialStates,
+  type publicationStatuses,
+} from '../lib/model';
+interface Props {
+  claimStanding?: (typeof claimStandings)[number];
+  editorialState: (typeof editorialStates)[number];
+  publication?: (typeof publicationStatuses)[number];
+}
+const { claimStanding, editorialState, publication } = Astro.props;
 ---
-<span class:list={['status', `status-${status}`]}><span aria-hidden="true">{statusSymbols[status]}</span> {statusLabels[status]}</span>
-{publication&&<span class="status publication-status">{publicationLabels[publication]}</span>}
+{claimStanding&&<span class:list={['status', 'claim-standing', 'status-claim-' + claimStanding]}><span aria-hidden="true">{claimStandingSymbols[claimStanding]}</span> {claimStandingLabels[claimStanding]}</span>}
+<span class:list={['status', 'editorial-state', 'status-editorial-' + editorialState]}>{editorialStateLabels[editorialState]}</span>
+{publication&&<span class:list={['status', 'publication-status', 'status-publication-' + publication]}>{publicationLabels[publication]}</span>}

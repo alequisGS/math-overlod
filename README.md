@@ -82,7 +82,8 @@ id: CATGEN-NEW-001
 title: A question about a categorical invariant
 shortTitle: A categorical question
 type: open-problem
-claimStatus: open
+claimStanding: open
+editorialState: draft
 publicationStatus: unpublished
 summary: State the actual mathematical question in one sentence.
 authors: []
@@ -115,11 +116,11 @@ $$
 Explain what resolving this question would clarify.
 ```
 
-For a theorem use `type: theorem`, an appropriate evidence-backed status, a precise **Statement**, and a proof or proof reference. For an example use `type: example` and, when appropriate, an `example-of` relation. Do not mark a result `proved`, `published` or `verified` merely because a file exists. Build before committing.
+For a theorem use `type: theorem`, a `claimStanding` value supported by the evidence, an `editorialState`, a precise **Statement**, and a proof or proof reference. For an example use `type: example`, an `editorialState`, and, when appropriate, an `example-of` relation. Do not mark a result `proved`, `published` or `verified` merely because a file exists. Build before committing.
 
 Supported types: `concept`, `definition`, `theorem`, `lemma`, `proposition`, `corollary`, `example`, `construction`, `computation`, `conjecture`, `open-problem`, `project`, `paper`, `claim`.
 
-Supported claim statuses: `source-claimed`, `proved`, `verified`, `computational`, `conjectural`, `open`, `in-progress`, `abandoned`. Badges show status in text and a symbol, with distinct border/fill treatments. Graph shapes encode mathematical role; dashed outlines mark unfinished entries. The selected panel displays exact status and provenance. Status is never encoded only by color.
+Claim-like records support `claimStanding`: `source-claimed`, `proved`, `verified`, `computational`, `conjectural`, `open` and `abandoned`. Every record has an `editorialState`: `draft`, `reviewed`, `curated` or `needs-review`. `publicationStatus` independently accepts `draft`, `unpublished`, `preprint` and `published`. Non-claim records omit `claimStanding`; their editorial state does not make them mathematical claims. Badges, graph filters and index filters keep these axes separate.
 
 Optional metadata includes `date` (ISO `YYYY-MM-DD`), `dateNote`, `arxiv` (optionally versioned), and `timeline: { stage: 0, note: "..." }` for stages 0–4. Do not invent dates to fill the timeline.
 
@@ -144,7 +145,7 @@ Fragments separate `assertionSelections` from `contextSelections`. Locator chang
 - The X₁₀ exceptional-collection theorem is labeled **proved**, attributed to the preprint. Its proof has not been independently audited here.
 - The Euler-form entry is a **source-reported computation**. This repository does not contain or rerun a numerical matrix computation.
 - The arXiv record is described as a **preprint**, not as a journal publication.
-- Background definitions are editorial atlas entries marked **in progress** pending review; this does not make standard definitions conjectural.
+- Background definitions are editorial atlas entries marked **reviewed**; this does not make standard definitions conjectural.
 - Categorical genus, its mirror interpretation, and broad HMS/arithmetic extensions remain descriptions or questions where precise statements were not supplied. No invented genus formula, mirror polynomial or general theorem is asserted.
 - No object in this beta claims formal verification.
 
@@ -152,9 +153,9 @@ The seed files use JSON-style values inside valid YAML frontmatter to keep field
 
 ## Git as research history
 
-The Git repository is intentionally the research database. Reviewable changes to `claimStatus`, `publicationStatus`, statement, sources, verification notes and relations record how mathematical objects develop. Keep IDs stable and use commit messages explaining the mathematical change.
+The Git repository is intentionally the research database. Reviewable changes to `claimStanding`, `editorialState`, `publicationStatus`, statement, sources, verification notes and relations record how mathematical objects develop. Keep IDs stable and use commit messages explaining the mathematical change.
 
-An object might evolve from an observation (`concept`, `in-progress`) to a conjecture (`conjecture`, `conjectural`), then a proved result (`theorem`, `proved`), undergo revision, and eventually become published (`type: theorem`, `claimStatus: proved`, `publicationStatus: published`). “Observation” and “revised” describe history, not additional schema status values. An identity such as `CATGEN-004` would survive all of those transitions.
+A research record can mature editorially from `draft` to `curated` without becoming a mathematical claim. A claim can move from `conjectural` to `proved`, while its `publicationStatus` remains `preprint` until the source is published. These are independent axes: `claimStanding` describes mathematical standing, `editorialState` describes the atlas record, and `publicationStatus` describes the associated source. An identity such as `CATGEN-004` survives all of those transitions.
 
 Git history links become useful after the files are committed to `main`; the conceptual timeline is not an automatically inferred commit timeline.
 
@@ -182,7 +183,7 @@ The workflow follows the [official Astro GitHub Pages guide](https://docs.astro.
 
 **Beta 0.1:** individual research atlas, 31 stable mathematical objects, semantic graph, basic search/filtering, mathematical documents, index, provenance and conceptual timeline.
 
-**Beta 0.2:** deterministic GitHub/LaTeX ingestion, source provenance, bibliography records, review staging, explicit acceptance, source synchronization, configurable projects, and separate claim/publication statuses.
+**Beta 0.2:** deterministic GitHub/LaTeX ingestion, source provenance, bibliography records, review staging, explicit acceptance, source synchronization, configurable projects, and separate claim-standing, editorial-state and publication axes.
 
 **Beta 0.3 (deferred):** optional AI proposals, deeper semantic matching, richer mathematical search, compiled TeX numbering, and reproducible computation integrations. Any interpretation layer must still pass through review.
 
@@ -280,13 +281,13 @@ The ignored `.import-cache/<paper>/<commit>/` stores fetched files and provenanc
 
 Individual files are written through atomic replacements. A repository-local `.import-cache.lock` serializes CLI runs; if a terminated process leaves it behind, confirm no importer is running before removing that lock. Staging files and Markdown/ledger updates are not a cross-file database transaction: if interrupted after a Markdown source write, rerun acceptance; exact source metadata recovers the stable ID. Review generated diffs before committing. Missing cache files in offline mode produce diagnostics rather than invented content.
 
-### Projects and epistemic status
+### Projects and record status
 
 Add a project to `src/content/projects.json` with title, short name, description, anchor node ID and direction. Create its anchor as a normal curated node. Graph filters, index, project headings and cluster placement read the registry; no hard-coded three-project limit remains. A node can have `projects: [X10, CATGEN]`; filtering matches every membership, while placement uses the first membership for one visible position. Unknown/duplicate memberships and missing anchors fail validation.
 
-`claimStatus` accepts source-claimed, proved, verified, computational, conjectural, open, in-progress and abandoned. `publicationStatus` independently accepts draft, unpublished, preprint and published. Both dimensions have badges and graph/index filters. A preprint is not journal publication; a theorem environment is not independent proof verification.
+`claimStanding` accepts source-claimed, proved, verified, computational, conjectural, open and abandoned, and is required only for claim-like record types. `editorialState` accepts draft, reviewed, curated and needs-review for every record. `publicationStatus` independently accepts draft, unpublished, preprint and published. For example, `X10-EC-CLAIM-001` is source-claimed, curated and preprint; `X10-001` is curated and preprint with no claim standing. A preprint is not journal publication; a theorem environment is not independent proof verification.
 
-The 31 existing nodes were migrated without changing IDs, body prose, verification notes or relations. Legacy project/status fields are also understood by the shared loader. `npm run migrate:content` previews migrations; add `-- --write` to write. Legacy published becomes publicationStatus published plus claimStatus source-claimed (it supplies no proof evidence); other claim statuses are preserved, and an existing arXiv identifier supplies preprint publication context when no explicit publication status exists.
+The existing nodes were migrated without changing IDs, body prose, verification notes or relations. Legacy project/status fields remain understood by the shared loader. `npm run migrate:content` previews migrations; add `-- --write` to write. Legacy published becomes `publicationStatus: published`; legacy claim-like statuses become `claimStanding`, while non-claim statuses become editorial state. An existing arXiv identifier supplies preprint publication context when no explicit publication status exists.
 
 ### Initial source inspection and limitations
 

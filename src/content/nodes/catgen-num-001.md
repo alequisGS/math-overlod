@@ -3,7 +3,7 @@ id: "CATGEN-NUM-001"
 title: "Numerical Grothendieck group"
 shortTitle: "Numerical K-group"
 type: "concept"
-claimStatus: "in-progress"
+editorialState: "reviewed"
 publicationStatus: "unpublished"
 summary: "A quotient of the Grothendieck group that removes classes invisible to Euler pairings."
 authors: []

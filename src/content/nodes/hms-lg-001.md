@@ -3,7 +3,7 @@ id: "HMS-LG-001"
 title: "Landau–Ginzburg models"
 shortTitle: "Landau–Ginzburg models"
 type: "concept"
-claimStatus: "in-progress"
+editorialState: "reviewed"
 publicationStatus: "unpublished"
 summary: "A space equipped with a potential, serving as a possible mirror in suitable settings."
 authors: []

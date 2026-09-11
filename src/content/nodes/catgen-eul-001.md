@@ -3,7 +3,7 @@ id: "CATGEN-EUL-001"
 title: "Euler pairing"
 shortTitle: "Euler pairing"
 type: "definition"
-claimStatus: "in-progress"
+editorialState: "reviewed"
 publicationStatus: "unpublished"
 summary: "The alternating sum of dimensions of Ext groups, when these dimensions and the sum are finite."
 authors: []

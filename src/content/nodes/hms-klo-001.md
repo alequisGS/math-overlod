@@ -3,7 +3,7 @@ id: "HMS-KLO-001"
 title: "Kloosterman motives"
 shortTitle: "Kloosterman motives"
 type: "concept"
-claimStatus: "in-progress"
+editorialState: "draft"
 publicationStatus: "unpublished"
 summary: "An arithmetic direction involving motivic structures associated with Kloosterman phenomena."
 authors: []

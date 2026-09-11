@@ -2,9 +2,10 @@ import cytoscape, { type Core, type StylesheetJson } from "cytoscape";
 import type { GraphData } from "../lib/graph";
 import {
   projects,
+  claimStandingLabels,
+  claimStandingSymbols,
+  editorialStateLabels,
   publicationLabels,
-  statusLabels,
-  statusSymbols,
 } from "../lib/model";
 
 const styles: StylesheetJson = [
@@ -87,11 +88,11 @@ const styles: StylesheetJson = [
   },
   {
     selector:
-      'node[claimStatus = "in-progress"], node[claimStatus = "open"], node[claimStatus = "conjectural"]',
+      'node[claimStanding = "open"], node[claimStanding = "conjectural"]',
     style: { "border-style": "dashed" },
   },
   {
-    selector: 'node[claimStatus = "abandoned"]',
+    selector: 'node[claimStanding = "abandoned"]',
     style: { "background-opacity": 0.2, "border-style": "dotted" },
   },
   {
@@ -256,9 +257,17 @@ class ResearchGraph extends HTMLElement {
       text("[data-panel-id]", node.id);
       text("[data-panel-title]", node.title);
       text("[data-panel-type]", node.type.replaceAll("-", " "));
-      const badge = this.querySelector<HTMLElement>("[data-panel-status]")!;
-      badge.className = `status status-${node.claimStatus}`;
-      badge.textContent = `${statusSymbols[node.claimStatus]} ${statusLabels[node.claimStatus]}`;
+const claimBadge = this.querySelector<HTMLElement>("[data-panel-claim]")!;
+      if (node.claimStanding) {
+        claimBadge.className = "status claim-standing status-claim-" + node.claimStanding;
+        claimBadge.textContent = claimStandingSymbols[node.claimStanding] + " " + claimStandingLabels[node.claimStanding];
+      } else {
+        claimBadge.className = "status claim-standing";
+        claimBadge.textContent = "";
+      }
+      const editorialBadge = this.querySelector<HTMLElement>("[data-panel-editorial]")!;
+      editorialBadge.className = "status editorial-state status-editorial-" + node.editorialState;
+      editorialBadge.textContent = editorialStateLabels[node.editorialState];
       text(
         "[data-panel-publication]",
         publicationLabels[node.publicationStatus],
@@ -353,7 +362,8 @@ class ResearchGraph extends HTMLElement {
     );
     const search = this.querySelector<HTMLInputElement>("[data-search]");
     const type = this.querySelector<HTMLSelectElement>("[data-type]");
-    const status = this.querySelector<HTMLSelectElement>("[data-status]");
+    const claimStanding = this.querySelector<HTMLSelectElement>("[data-claim-standing]");
+    const editorialState = this.querySelector<HTMLSelectElement>("[data-editorial-state]");
     const project = this.querySelector<HTMLSelectElement>("[data-project]");
     const publication =
       this.querySelector<HTMLSelectElement>("[data-publication]");
@@ -365,7 +375,8 @@ class ResearchGraph extends HTMLElement {
           .filter(
             (n) =>
               (!type!.value || n.type === type!.value) &&
-              (!status!.value || n.claimStatus === status!.value) &&
+              (!claimStanding!.value || n.claimStanding === claimStanding!.value) &&
+              (!editorialState!.value || n.editorialState === editorialState!.value) &&
               (!project!.value || n.projects.includes(project!.value)) &&
               (!publication!.value ||
                 n.publicationStatus === publication!.value) &&
@@ -394,7 +405,7 @@ class ResearchGraph extends HTMLElement {
       fit();
     };
     search?.addEventListener("input", applyFilters);
-    [type, status, project, publication].forEach((s) =>
+    [type, claimStanding, editorialState, project, publication].forEach((s) =>
       s?.addEventListener("change", applyFilters),
     );
     const labels = this.querySelector<HTMLInputElement>("[data-labels]");
@@ -404,7 +415,8 @@ class ResearchGraph extends HTMLElement {
     this.querySelector("[data-reset]")?.addEventListener("click", () => {
       search!.value = "";
       type!.value = "";
-      status!.value = "";
+      claimStanding!.value = "";
+      editorialState!.value = "";
       project!.value = "";
       publication!.value = "";
       labels!.checked = true;

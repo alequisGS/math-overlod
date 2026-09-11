@@ -3,7 +3,7 @@ id: "HMS-PER-001"
 title: "Periods"
 shortTitle: "Periods"
 type: "concept"
-claimStatus: "in-progress"
+editorialState: "reviewed"
 publicationStatus: "unpublished"
 summary: "Integrals of differential forms over cycles that vary with geometric parameters."
 authors: []

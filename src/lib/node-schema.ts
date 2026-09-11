@@ -1,7 +1,9 @@
 import { z } from "astro/zod";
 import {
+  claimLikeTypes,
+  claimStandings,
+  editorialStates,
   nodeTypes,
-  statuses,
   publicationStatuses,
   relationTypes,
 } from "./model.ts";
@@ -81,58 +83,75 @@ export const nodeSchema = z.preprocess(
     value && typeof value === "object"
       ? migrateLegacyNode(value as Record<string, unknown>)
       : value,
-  z.object({
-    id: identifier,
-    title: z.string().min(1),
-    shortTitle: z.string().min(1),
-    type: z.enum(nodeTypes),
-    claimStatus: z.enum(statuses),
-    publicationStatus: z.enum(publicationStatuses),
-    summary: z.string().min(1),
-    date: z.iso.date().optional(),
-    dateNote: z.string().optional(),
-    authors: z.array(z.string()).default([]),
-    projects: z.array(z.string().regex(/^[A-Z][A-Z0-9-]*$/)).min(1),
-    about: z.array(identifier).default([]),
-    tags: z.array(z.string()).default([]),
-    references: z
-      .array(
-        z.object({
-          title: z.string(),
-          url: z.url().optional(),
-          note: z.string().optional(),
-        }),
-      )
-      .default([]),
-    arxiv: z
-      .string()
-      .regex(/^\d{4}\.\d{4,5}(v\d+)?$/)
-      .optional(),
-    dependsOn: z.array(identifier).default([]),
-    relations: z
-      .array(
-        z.object({
-          target: identifier,
-          type: z.enum(relationTypes),
-          note: z.string().optional(),
-        }),
-      )
-      .default([]),
-    verification: z.object({
-      method: z.enum([
-        "human",
-        "human-source",
-        "computational",
-        "formal",
-        "mixed",
-      ]),
-      note: z.string().min(1),
+  z
+    .object({
+      id: identifier,
+      title: z.string().min(1),
+      shortTitle: z.string().min(1),
+      type: z.enum(nodeTypes),
+      claimStanding: z.enum(claimStandings).optional(),
+      editorialState: z.enum(editorialStates),
+      publicationStatus: z.enum(publicationStatuses),
+      summary: z.string().min(1),
+      date: z.iso.date().optional(),
+      dateNote: z.string().optional(),
+      authors: z.array(z.string()).default([]),
+      projects: z.array(z.string().regex(/^[A-Z][A-Z0-9-]*$/)).min(1),
+      about: z.array(identifier).default([]),
+      tags: z.array(z.string()).default([]),
+      references: z
+        .array(
+          z.object({
+            title: z.string(),
+            url: z.url().optional(),
+            note: z.string().optional(),
+          }),
+        )
+        .default([]),
+      arxiv: z
+        .string()
+        .regex(/^\d{4}\.\d{4,5}(v\d+)?$/)
+        .optional(),
+      dependsOn: z.array(identifier).default([]),
+      relations: z
+        .array(
+          z.object({
+            target: identifier,
+            type: z.enum(relationTypes),
+            note: z.string().optional(),
+          }),
+        )
+        .default([]),
+      verification: z.object({
+        method: z.enum([
+          "human",
+          "human-source",
+          "computational",
+          "formal",
+          "mixed",
+        ]),
+        note: z.string().min(1),
+      }),
+      provenance: z.enum(["source-backed", "background", "research-direction"]),
+      timeline: z
+        .object({ stage: z.number().int().min(0).max(4), note: z.string() })
+        .optional(),
+      sources: z.array(githubLatexSourceSchema).default([]),
+    })
+    .superRefine((data, ctx) => {
+      const isClaimLike = claimLikeTypes.includes(data.type as never);
+      if (isClaimLike && !data.claimStanding)
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["claimStanding"],
+          message: "Claim-like records require claimStanding",
+        });
+      if (!isClaimLike && data.claimStanding)
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["claimStanding"],
+          message: "Non-claim records must omit claimStanding",
+        });
     }),
-    provenance: z.enum(["source-backed", "background", "research-direction"]),
-    timeline: z
-      .object({ stage: z.number().int().min(0).max(4), note: z.string() })
-      .optional(),
-    sources: z.array(githubLatexSourceSchema).default([]),
-  }),
 );
 export type CuratedNode = z.infer<typeof nodeSchema>;

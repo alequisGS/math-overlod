@@ -162,7 +162,11 @@ export async function acceptProposal(
       title,
       shortTitle: title.slice(0, 90),
       type: object.proposedNodeType,
-      claimStatus: "source-claimed",
+      ...(typeof object.proposedNodeType === "string" &&
+      ["claim", "theorem", "lemma", "proposition", "corollary", "conjecture", "open-problem", "computation"].includes(object.proposedNodeType)
+        ? { claimStanding: "source-claimed" }
+        : {}),
+      editorialState: "curated",
       publicationStatus: options.publication ?? "draft",
       summary: `Statement attributed to the author's ${object.environment} source; accepted for provenance, not independently verified.`,
       authors: paper.metadata.authors,
@@ -206,7 +210,7 @@ export async function acceptProposal(
       nodeId: data.id,
       commit: paper.source.commit,
       reviewedAt: now,
-      note: "Explicit CLI acceptance of source metadata; manual prose, claim status, and semantic relations retained.",
+        note: "Explicit CLI acceptance of source metadata; manual prose, claim standing, editorial state, and semantic relations retained.",
     };
     await writeJson(path.join(stagingPath(root, id), "review.json"), ledger);
   }

@@ -3,7 +3,7 @@ id: "CATGEN-FANO-001"
 title: "Fano stacks as a testing ground"
 shortTitle: "Fano stacks"
 type: "concept"
-claimStatus: "in-progress"
+editorialState: "draft"
 publicationStatus: "unpublished"
 summary: "A broader setting for categorical questions suggested by log del Pezzo examples."
 authors: []

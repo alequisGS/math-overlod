@@ -143,7 +143,7 @@ test("proofs with nested lists retain references and do not infer semantics", as
   );
   assert.deepEqual(o.citations, ["Source"]);
   assert.equal(o.equations.length, 1);
-  assert.equal(o.claimStatus, "source-claimed");
+  assert.equal(o.claimStanding, "source-claimed");
   assert.equal(o.verification.method, "human-source");
   assert.ok(!("relations" in o));
 });
@@ -278,7 +278,7 @@ test("importing and dry-run acceptance never change curated records", async () =
   await stagePaper(fresh.root, paper, await readCurated(fresh.root), true);
   assert.deepEqual(await stagedPapers(fresh.root), []);
 });
-test("acceptance preserves stable ID, exact manual prose, claim status and relations across sync", async () => {
+test("acceptance preserves stable ID, exact manual prose, claim standing and relations across sync", async () => {
   const { root, file } = await workspace();
   const body = parseRecord(await readFile(file, "utf8"), file).body;
   await writeFile(
@@ -299,7 +299,7 @@ test("acceptance preserves stable ID, exact manual prose, claim status and relat
   const after = parseRecord(await readFile(file, "utf8"), file);
   assert.equal(after.data.id, before.data.id);
   assert.equal(after.body, before.body);
-  assert.equal(after.data.claimStatus, "proved");
+  assert.equal(after.data.claimStanding, "proved");
   assert.deepEqual(after.data.relations, before.data.relations);
   assert.deepEqual(after.data.dependsOn, before.data.dependsOn);
   assert.equal(after.data.sources[0].label, "thm:stable");
@@ -362,7 +362,7 @@ test("new acceptance requires explicit identity/project and remains source-claim
     write: true,
   });
   const fresh = (await readCurated(root)).find((r) => r.data.id === "NEW-001")!;
-  assert.equal(fresh.data.claimStatus, "source-claimed");
+  assert.equal(fresh.data.claimStanding, "source-claimed");
   assert.equal(fresh.data.publicationStatus, "draft");
   assert.deepEqual(fresh.data.projects, ["X10", "CATGEN"]);
   assert.equal(fresh.data.relations.length, 0);
@@ -417,12 +417,12 @@ test("rejections persist until source changes and source errors prevent acceptan
 test("project and status migration is idempotent and supports additional/multiple projects", () => {
   const migrated = migrateLegacyNode(legacy);
   assert.deepEqual(migrated.projects, ["X10"]);
-  assert.equal(migrated.claimStatus, "proved");
+  assert.equal(migrated.claimStanding, "proved");
   assert.equal(migrated.publicationStatus, "preprint");
   assert.ok(!("status" in migrated));
   assert.deepEqual(migrateLegacyNode(migrated), migrated);
   const published = migrateLegacyNode({ ...legacy, status: "published" });
-  assert.equal(published.claimStatus, "source-claimed");
+  assert.equal(published.claimStanding, "source-claimed");
   assert.equal(published.publicationStatus, "published");
   assert.doesNotThrow(() =>
     validateProjectMembership([{ id: "TEST-001", projects: ["X10", "NEW"] }], {

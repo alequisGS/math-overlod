@@ -3,7 +3,7 @@ id: "HMS-MON-001"
 title: "Monodromy"
 shortTitle: "Monodromy"
 type: "concept"
-claimStatus: "in-progress"
+editorialState: "reviewed"
 publicationStatus: "unpublished"
 summary: "The action obtained by transporting local data around loops in parameter space."
 authors: []

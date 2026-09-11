@@ -3,7 +3,7 @@ id: "CATGEN-ANTI-001"
 title: "The antisymmetric Euler form"
 shortTitle: "Antisymmetric Euler form"
 type: "definition"
-claimStatus: "in-progress"
+editorialState: "reviewed"
 publicationStatus: "unpublished"
 summary: "The skew part of the Euler pairing isolates its failure to be symmetric."
 authors: []

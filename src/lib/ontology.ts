@@ -1,13 +1,38 @@
-/** Publication is a separate dimension and never implies proof. */
+import { claimLikeTypes } from "./model.ts";
+
+/** Publication, claim standing, and editorial state are independent axes. */
 export function migrateLegacyNode(
   input: Record<string, unknown>,
 ): Record<string, unknown> {
   const data = { ...input };
+  const type = typeof data.type === "string" ? data.type : undefined;
+  const isClaimLike = type !== undefined && claimLikeTypes.includes(type as never);
+  const legacyStatus =
+    typeof data.claimStatus === "string"
+      ? data.claimStatus
+      : typeof data.status === "string"
+        ? data.status
+        : undefined;
   if (!data.projects && typeof data.project === "string")
     data.projects = [data.project];
-  if (!data.claimStatus && typeof data.status === "string")
-    data.claimStatus =
-      data.status === "published" ? "source-claimed" : data.status;
+  if (!data.claimStanding && isClaimLike && legacyStatus) {
+    data.claimStanding =
+      legacyStatus === "published"
+        ? "source-claimed"
+        : legacyStatus === "in-progress"
+          ? "conjectural"
+          : legacyStatus;
+  }
+  if (!data.editorialState) {
+    data.editorialState =
+      legacyStatus === "in-progress" || legacyStatus === "open"
+        ? "draft"
+        : data.provenance === "background"
+          ? "reviewed"
+          : data.provenance === "research-direction"
+            ? "draft"
+            : "curated";
+  }
   if (!data.publicationStatus)
     data.publicationStatus =
       data.status === "published"
@@ -15,6 +40,7 @@ export function migrateLegacyNode(
         : data.arxiv
           ? "preprint"
           : "unpublished";
+  delete data.claimStatus;
   delete data.project;
   delete data.status;
   return data;

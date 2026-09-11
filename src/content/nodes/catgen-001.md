@@ -3,7 +3,7 @@ id: "CATGEN-001"
 title: "Categorical genus"
 shortTitle: "Categorical genus"
 type: "concept"
-claimStatus: "in-progress"
+editorialState: "draft"
 publicationStatus: "unpublished"
 summary: "An emerging invariant program motivated by the antisymmetric part of the Euler pairing."
 authors: []

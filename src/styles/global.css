@@ -573,40 +573,43 @@
     white-space: nowrap;
     letter-spacing: 0;
   }
-  .status-proved {
+  .status-claim-proved {
     background: var(--ink);
     color: white;
     border-color: var(--ink);
   }
-  .status-published {
+  .status-publication-published {
     background: #dfe8e3;
     color: #244738;
     border-color: #98ada2;
   }
-  .status-open,
-  .status-conjectural {
+  .status-claim-open,
+  .status-claim-conjectural {
     border-style: dashed;
     background: transparent;
     color: #625235;
   }
-  .status-in-progress {
-    border-style: dashed;
-    color: #5c6878;
-  }
-  .status-computational {
+  .status-claim-computational {
     border-style: double;
     border-width: 3px;
     background: #e7ebf0;
     color: #344964;
     padding: 1px 6px;
   }
-  .status-verified {
+  .status-claim-verified,
+  .status-editorial-reviewed,
+  .status-editorial-curated {
     background: #e7efe9;
     color: #234634;
   }
-  .status-abandoned {
+  .status-claim-abandoned {
     text-decoration: line-through;
     color: #706666;
+  }
+  .status-editorial-draft,
+  .status-editorial-needs-review {
+    border-style: dashed;
+    color: #5c6878;
   }
   .graph-heading {
     padding: 25px 32px 22px;

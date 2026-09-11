@@ -15,16 +15,26 @@ export const nodeTypes = [
   "paper",
   "claim",
 ] as const;
-export const statuses = [
+export const claimLikeTypes = [
+  "claim",
+  "theorem",
+  "lemma",
+  "proposition",
+  "corollary",
+  "conjecture",
+  "open-problem",
+  "computation",
+] as const;
+export const claimStandings = [
   "source-claimed",
   "proved",
   "verified",
   "computational",
   "conjectural",
   "open",
-  "in-progress",
   "abandoned",
 ] as const;
+export type ClaimStanding = (typeof claimStandings)[number];
 export const relationTypes = [
   "uses",
   "implies",
@@ -39,25 +49,36 @@ export const relationTypes = [
 ] as const;
 export type RelationType = (typeof relationTypes)[number];
 export type Relation = { target: string; type: RelationType; note?: string };
-export const statusLabels: Record<(typeof statuses)[number], string> = {
+export const claimStandingLabels: Record<ClaimStanding, string> = {
   "source-claimed": "Source-claimed",
   proved: "Proved",
   verified: "Verified",
   computational: "Computational",
   conjectural: "Conjectural",
   open: "Open problem",
-  "in-progress": "In progress",
   abandoned: "Abandoned",
 };
-export const statusSymbols: Record<(typeof statuses)[number], string> = {
+export const claimStandingSymbols: Record<ClaimStanding, string> = {
   "source-claimed": "◇",
   proved: "■",
   verified: "✓",
   computational: "⌘",
   conjectural: "◇",
   open: "?",
-  "in-progress": "◌",
   abandoned: "×",
+};
+export const editorialStates = [
+  "draft",
+  "reviewed",
+  "curated",
+  "needs-review",
+] as const;
+export type EditorialState = (typeof editorialStates)[number];
+export const editorialStateLabels: Record<EditorialState, string> = {
+  draft: "Draft",
+  reviewed: "Reviewed",
+  curated: "Curated",
+  "needs-review": "Needs review",
 };
 export const publicationStatuses = [
   "draft",

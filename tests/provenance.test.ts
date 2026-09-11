@@ -353,8 +353,8 @@ test("duplicate and invalid provenance references are rejected without sibling e
 
 test("about edges are structural and remain separate from semantic relations", () => {
   const nodes = [
-    { ...claimNodes[0], id: "X10-RES-CLAIM-001", shortTitle: "claim", projects: ["X10"], about: ["X10-RES-001"], relations: [], dependsOn: [], sources: [], tags: [], title: "claim", claimStatus: "source-claimed", publicationStatus: "preprint", summary: "claim", verification: { method: "human", note: "test" }, provenance: "source-backed" },
-    { ...claimNodes[1], id: "X10-RES-001", shortTitle: "resolution", projects: ["X10"], about: [], relations: [{ target: "X10-RES-CLAIM-001", type: "related-to" }], dependsOn: [], sources: [], tags: [], title: "resolution", claimStatus: "in-progress", publicationStatus: "preprint", summary: "resolution", verification: { method: "human", note: "test" }, provenance: "source-backed" },
+    { ...claimNodes[0], id: "X10-RES-CLAIM-001", shortTitle: "claim", projects: ["X10"], about: ["X10-RES-001"], relations: [], dependsOn: [], sources: [], tags: [], title: "claim", claimStanding: "source-claimed", editorialState: "curated", publicationStatus: "preprint", summary: "claim", verification: { method: "human", note: "test" }, provenance: "source-backed" },
+    { ...claimNodes[1], id: "X10-RES-001", shortTitle: "resolution", projects: ["X10"], about: [], relations: [{ target: "X10-RES-CLAIM-001", type: "related-to" }], dependsOn: [], sources: [], tags: [], title: "resolution", editorialState: "curated", publicationStatus: "preprint", summary: "resolution", verification: { method: "human", note: "test" }, provenance: "source-backed" },
   ] as never[];
   const data = aboutGraphEdges(nodes);
   assert.deepEqual(data.find(edge => edge.type === "about"), {

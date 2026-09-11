@@ -3,7 +3,7 @@ id: "X10-PAPER-001"
 title: "Exceptional collections for canonical stacks of log del Pezzo surfaces with 1/3(1,1) singularities"
 shortTitle: "Exceptional collections · preprint"
 type: "paper"
-claimStatus: "in-progress"
+editorialState: "curated"
 publicationStatus: "preprint"
 summary: "The preprint anchoring the X₁₀ part of the research atlas."
 authors: ["Alex Junior Gomez Saltachin"]

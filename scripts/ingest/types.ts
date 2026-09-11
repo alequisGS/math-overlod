@@ -92,7 +92,7 @@ export interface ImportedMathObject {
   proposedNodeType: string;
   suggestedId: string;
   contentHash: string;
-  claimStatus: "source-claimed";
+  claimStanding: "source-claimed";
   verification: { method: "human-source"; note: string };
   candidates: CandidateMatch[];
   reviewState: ReviewState;
